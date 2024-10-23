@@ -1,0 +1,83 @@
+Paths :
+    ✔ Trace the paths: @done(24-10-23 17:33)
+    ☐  r for the right lane
+    ☐  s to go forward
+    ☐  l for the left lane
+    AVs:
+        Simulation :
+            ☐ Arrow Up, generate vehicles from south to north.
+            ☐ Arrow Down, generate vehicles from north to south.
+            ☐ Arrow Right, generate vehicles from west to east.
+            ☐ Arrow Left, generate vehicles from east to west.
+        Control :
+            ☐ All AVs must follow their lanes when turning
+            ☐ AVs have at least 3 different velocities
+            ☐ Each AV must respect a safety distance from other AVs.
+            ☐ The R key must generate random vehicles
+            ☐ The Esc key must finish the simulation
+            ☐ A time on the creation of two AVs on the same lane
+        Animation :
+            ☐ The AV must turn properly when turning
+
+Statistics :
+    ☐ Max number of vehicles that passed the intersection
+    ☐ Max velocity of all vehicles (Display the fastest speed achieved)
+    ☐ Min velocity of all vehicles (Display the slowest speed reached)
+    ☐ Max time that the vehicles took to pass the intersection (for all vehicles, display the one that took more time)
+    ☐ Min time that the vehicles took to pass the intersection  (for all vehicles, display the one that took less time) 
+    ☐ The time starts to count whenever the vehicle is detected by the smart intersection algorithm until the end of the intersection, which is when the vehicle is removed from the canvas.
+    ☐ Close calls, this is when both vehicles pass each other with a violation of the safe distance.
+
+
+    
+Bonus :
+    ☐ Create your own assets for the animation of the vehicles
+    ☐ Add more statistics
+    ☐ Consider acceleration and deceleration on the physics of your game. That means that the cars don't change automatically of speed (e.g. different cars can take different times to change from 50 to 10 depending on how good the brakes are)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Note :
+    'Cmd/Ctrl+Enter' // Triggers `Todo: Toggle Box`
+    'Alt+Enter' // Triggers `Todo: Toggle Box`
+    'Alt+D' // Triggers `Todo: Toggle Done`
+    'Alt+C' // Triggers `Todo: Toggle Cancelled`
+    'Alt+S' // Triggers `Todo: Toggle Start`
+    'Cmd/Ctrl+Shift+A' // Triggers  `Todo: Archive`
+    Custom symbols: you can replace the default symbols with any of the supported ones
+    Box: - ❍ ❑ ■ ⬜ □ ☐ ▪ ▫ – — ≡ → › [] [ ]
+    Done: ✔ ✓ ☑ + [x] [X] [+]
+    Cancelled: ✘ x X [-]
