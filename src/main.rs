@@ -2,11 +2,9 @@ use smart_road::models::{path, vehicules::Vehicule, vehicules::Direction};
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use std::time::Duration;
 
-const WIDTH: u32 = 900;
-const HEIGHT: u32 = 900;
-const FPS: u32 = 60;
+const WIDTH: u32 = 700;
+const HEIGHT: u32 = 700;
 
 pub fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -95,7 +93,7 @@ pub fn main() -> Result<(), String> {
         }
 
         canvas.present();
-        std::thread::sleep(Duration::new(0, 1_000_000_000u32 / FPS));
+        std::thread::sleep(std::time::Duration::from_millis(100));
     }
 
     Ok(())
