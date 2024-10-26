@@ -7,13 +7,19 @@ use std::time::{Duration, Instant};
 use sdl2::keyboard::Keycode;
 
 const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(2000);
+#[derive(Clone)]
 pub enum Direction {
     North,
     South,
     East,
     West,
 }
-
+#[derive(Clone, PartialEq, Eq, Copy)]
+pub enum Turn {
+    Left,
+    Right,
+    Forward
+}
 pub struct Vehicule<'a> {
     pub x: i32,
     pub y: i32,
@@ -22,8 +28,9 @@ pub struct Vehicule<'a> {
     pub direction: Direction,
     pub angle: f64,
     pub texture: Texture<'a>,
+    pub turn : Turn,
     pub time : i64,
-    pub velocity : i64,
+    pub velocity : i32,
     pub distance : i64
 }
 
@@ -48,26 +55,33 @@ impl<'a> Vehicule<'a> {
                 1 => (425, 700, 0.0),
                 2 => (350, 700, 0.0),
                 3 => (390, 700, 0.0),
-                _ => (350, 700, 0.0),
+                _ => unreachable!(),
             },
             Direction::South => match lane {
-                1 => (390, 0, 180.0),
-                2 => (350, 0, 180.0),
-                3 => (425, 0, 180.0),
-                _ => (350, 0, 180.0),
+                1 => (230, 0, 180.0),
+                2 => (310, 0, 180.0),
+                3 => (270, 0, 180.0),
+                _ => unreachable!(),
             },
             Direction::East => match lane {
                 1 => (0, 425, 90.0),
                 2 => (0, 350, 90.0),
                 3 => (0, 390, 90.0),
-                _ => (0, 350, 90.0),
+                _ => unreachable!(),
             },
             Direction::West => match lane {
-                1 => (700, 390, 270.0),
-                2 => (700, 350, 270.0),
-                3 => (700, 425, 270.0),
-                _ => (700, 350, 270.0),
+                1 => (700, 230, 270.0),
+                2 => (700, 310, 270.0),
+                3 => (700, 270, 270.0),
+                _ => unreachable!(),
             },
+        };
+        let turn = match  lane {
+            1 => Turn::Right,
+            2 => Turn::Left,
+            3 => Turn::Forward,
+            _ => unreachable!(),
+            
         };
 
         Ok(Vehicule {
@@ -78,9 +92,10 @@ impl<'a> Vehicule<'a> {
             direction,
             angle,
             texture,
-            time : 0,
-            distance : 0,
-            velocity : 0
+            turn,
+            time : 2,
+            distance : 700,
+            velocity : 5
         })
     }
     pub fn can_add_vehicle(
@@ -111,11 +126,91 @@ impl<'a> Vehicule<'a> {
     }
 
     pub fn update_position(&mut self) {
+        // self.execute_turn();
         match self.direction {
-            Direction::North => self.y -= 5,
-            Direction::South => self.y += 5,
-            Direction::East => self.x += 5,
-            Direction::West => self.x -= 5,
+            Direction::North => self.y -= self.velocity,
+            Direction::South => self.y += self.velocity,
+            Direction::East => self.x += self.velocity,
+            Direction::West => self.x -= self.velocity,
+        }
+        let is_left = self.turn == Turn::Left;
+        match self.direction {
+            Direction::North => {
+                match  self.y {
+                    425 => {
+                        if !is_left {
+                            self.execute_turn()
+                        }
+                    },
+                    300 => {
+                        if is_left {
+                            self.execute_turn()
+                        }
+                    },
+                    _=> return,
+                }
+            },
+            Direction::South => {
+                match  self.y {
+                    220 => {
+                        if !is_left {
+                            self.execute_turn()
+                        }
+                    },
+                    350 => {
+                        if is_left {
+                            self.execute_turn()
+                        }
+                    },
+                    _=> return,
+                }
+            },
+            Direction::East => {
+                match  self.x {
+                    230 => {
+                        if !is_left {
+                            self.execute_turn()
+                        }
+                    },
+                    350 => {
+                        if is_left {
+                            self.execute_turn()
+                        }
+                    },
+                    _=> return,
+                }
+            },
+            Direction::West => {
+                match  self.x {
+                    425 => {
+                        if !is_left {
+                            self.execute_turn()
+                        }
+                    },
+                    310 => {
+                        if is_left {
+                            self.execute_turn()
+                        }
+                    },
+                    _=> return,
+                }
+            },
+        }
+
+        
+    }
+
+
+    pub fn execute_turn(&mut self) {
+        if self.turn != Turn::Forward {
+            self.direction = match (self.direction.clone(), self.turn) {
+                (Direction::North, Turn::Left) | (Direction::South, Turn::Right) => Direction::West,
+                (Direction::North, Turn::Right) | (Direction::South, Turn::Left) => Direction::East,
+                (Direction::East, Turn::Left) | (Direction::West, Turn::Right) => Direction::North,
+                (Direction::East, Turn::Right) | (Direction::West, Turn::Left) => Direction::South,
+                _ => self.direction.clone(),
+            };
+            self.turn = Turn::Forward; // Reset turn after executing it
         }
     }
 }
