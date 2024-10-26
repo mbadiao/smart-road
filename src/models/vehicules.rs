@@ -18,6 +18,9 @@ pub struct Vehicule<'a> {
     pub direction: Direction,
     pub angle: f64,
     pub texture: Texture<'a>,
+    pub time : i64,
+    pub velocity : i64,
+    pub distance : i64
 }
 
 
@@ -71,6 +74,9 @@ impl<'a> Vehicule<'a> {
             direction,
             angle,
             texture,
+            time : 0,
+            distance : 0,
+            velocity : 0
         })
     }
 

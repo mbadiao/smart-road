@@ -30,7 +30,7 @@ pub fn main() -> Result<(), String> {
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
 
-        path::new_path(&mut canvas);
+        path::Path::new_path(&mut canvas);
 
         for event in event_pump.poll_iter() {
             match event {
