@@ -2,7 +2,11 @@ use rand::Rng;
 use sdl2::image::{LoadTexture, InitFlag};
 use sdl2::render::{Texture, TextureCreator};
 use sdl2::video::WindowContext;
+use std::collections::HashMap;
+use std::time::{Duration, Instant};
+use sdl2::keyboard::Keycode;
 
+const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(2000);
 pub enum Direction {
     North,
     South,
@@ -79,7 +83,19 @@ impl<'a> Vehicule<'a> {
             velocity : 0
         })
     }
-
+    pub fn can_add_vehicle(
+        last_key_press: &mut HashMap<Keycode, Instant>,
+        keycode: Keycode,
+    ) -> bool {
+        let now = Instant::now();
+        if let Some(&last_time) = last_key_press.get(&keycode) {
+            if now.duration_since(last_time) < VEHICLE_CREATION_COOLDOWN {
+                return false;
+            }
+        }
+        last_key_press.insert(keycode, now);
+        true
+    }
     pub fn render(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) -> Result<(), String> {
         let target_rect = sdl2::rect::Rect::new(self.x, self.y, self.width, self.height);
         canvas.copy_ex(

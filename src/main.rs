@@ -2,6 +2,7 @@ use smart_road::models::{path, vehicules::Vehicule, vehicules::Direction};
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use std::collections::HashMap;
 
 const WIDTH: u32 = 700;
 const HEIGHT: u32 = 700;
@@ -24,6 +25,7 @@ pub fn main() -> Result<(), String> {
     let texture_creator = canvas.texture_creator();
 
     let mut vehicles = Vec::new();
+    let mut last_key_press = HashMap::new();
 
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
@@ -43,45 +45,53 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Up),
                     ..
                 } => {
-                    vehicles.push(Vehicule::new(
-                        &sdl_context,
-                        &mut canvas,
-                        &texture_creator,
-                        Direction::North,
-                    )?);
+                    if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::Up) {
+                        vehicles.push(Vehicule::new(
+                            &sdl_context,
+                            &mut canvas,
+                            &texture_creator,
+                            Direction::North,
+                        )?);
+                    }
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Down),
                     ..
                 } => {
-                    vehicles.push(Vehicule::new(
-                        &sdl_context,
-                        &mut canvas,
-                        &texture_creator,
-                        Direction::South,
-                    )?);
+                    if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::Down) {
+                        vehicles.push(Vehicule::new(
+                            &sdl_context,
+                            &mut canvas,
+                            &texture_creator,
+                            Direction::South,
+                        )?);
+                    }
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Left),
                     ..
                 } => {
-                    vehicles.push(Vehicule::new(
-                        &sdl_context,
-                        &mut canvas,
-                        &texture_creator,
-                        Direction::West,
-                    )?);
+                    if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::Left) {
+                        vehicles.push(Vehicule::new(
+                            &sdl_context,
+                            &mut canvas,
+                            &texture_creator,
+                            Direction::West,
+                        )?);
+                    }
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Right),
                     ..
                 } => {
-                    vehicles.push(Vehicule::new(
-                        &sdl_context,
-                        &mut canvas,
-                        &texture_creator,
-                        Direction::East,
-                    )?);
+                    if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::Right) {
+                        vehicles.push(Vehicule::new(
+                            &sdl_context,
+                            &mut canvas,
+                            &texture_creator,
+                            Direction::East,
+                        )?);
+                    }
                 }
                 _ => {}
             }
@@ -98,3 +108,5 @@ pub fn main() -> Result<(), String> {
 
     Ok(())
 }
+
+
