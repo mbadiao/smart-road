@@ -45,11 +45,9 @@ impl<'a> Vehicule<'a> {
         let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG)?;
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
-        // Randomly select a lane (1, 2, or 3) for each direction
         let mut rng = rand::thread_rng();
         let lane = rng.gen_range(1..=3);
 
-        // Set starting position and angle based on direction and lane
         let (x, y, angle) = match direction {
             Direction::North => match lane {
                 1 => (425, 700, 0.0),
@@ -113,6 +111,7 @@ impl<'a> Vehicule<'a> {
     }
     pub fn render(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) -> Result<(), String> {
         let target_rect = sdl2::rect::Rect::new(self.x, self.y, self.width, self.height);
+
         canvas.copy_ex(
             &self.texture,
             None,
@@ -126,13 +125,13 @@ impl<'a> Vehicule<'a> {
     }
 
     pub fn update_position(&mut self) {
-        // self.execute_turn();
         match self.direction {
             Direction::North => self.y -= self.velocity,
             Direction::South => self.y += self.velocity,
             Direction::East => self.x += self.velocity,
             Direction::West => self.x -= self.velocity,
         }
+
         let is_left = self.turn == Turn::Left;
         match self.direction {
             Direction::North => {
@@ -150,6 +149,7 @@ impl<'a> Vehicule<'a> {
                     _=> return,
                 }
             },
+
             Direction::South => {
                 match  self.y {
                     220 => {
@@ -209,6 +209,12 @@ impl<'a> Vehicule<'a> {
                 (Direction::East, Turn::Left) | (Direction::West, Turn::Right) => Direction::North,
                 (Direction::East, Turn::Right) | (Direction::West, Turn::Left) => Direction::South,
                 _ => self.direction.clone(),
+            };
+            self.angle = match self.direction.clone()  {
+                Direction::West => 270.0,
+                Direction::East => 90.0,
+                Direction::North => 0.0,
+                Direction::South => 180.0,
             };
             self.turn = Turn::Forward; // Reset turn after executing it
         }

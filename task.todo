@@ -1,23 +1,23 @@
 Paths :
     ✔ Trace the paths: @done(24-10-23 17:33)
-    ☐  r for the right lane
-    ☐  s to go forward
-    ☐  l for the left lane
+    ✔  r for the right lane @done(24-10-26 17:24)
+    ✔  s to go forward @done(24-10-26 17:24)
+    ✔  l for the left lane @done(24-10-26 17:24)
     AVs:
         Simulation :
-            ☐ Arrow Up, generate vehicles from south to north.
-            ☐ Arrow Down, generate vehicles from north to south.
-            ☐ Arrow Right, generate vehicles from west to east.
-            ☐ Arrow Left, generate vehicles from east to west.
+            ✔ Arrow Up, generate vehicles from south to north. @done(24-10-26 17:24)
+            ✔ Arrow Down, generate vehicles from north to south. @done(24-10-26 17:24)
+            ✔ Arrow Right, generate vehicles from west to east. @done(24-10-26 17:24)
+            ✔ Arrow Left, generate vehicles from east to west. @done(24-10-26 17:24)
         Control :
-            ☐ All AVs must follow their lanes when turning
+            ✔ All AVs must follow their lanes when turning @done(24-10-26 17:24)
             ☐ AVs have at least 3 different velocities
             ☐ Each AV must respect a safety distance from other AVs.
             ☐ The R key must generate random vehicles
             ☐ The Esc key must finish the simulation
             ☐ A time on the creation of two AVs on the same lane
         Animation :
-            ☐ The AV must turn properly when turning
+            ✔ The AV must turn properly when turning @done(24-10-26 17:24)
 
 Statistics :
     ☐ Max number of vehicles that passed the intersection
