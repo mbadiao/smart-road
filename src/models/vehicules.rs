@@ -6,6 +6,12 @@ use std::collections::HashMap;
 use std::time::{Duration, Instant};
 use sdl2::keyboard::Keycode;
 
+
+pub enum VehiclePriority {
+    High,    // Has right of way
+    Medium,  // Yield to high priority
+    Low      // Yield to high and medium priority
+}
 const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(2000);
 #[derive(Clone, PartialEq, Eq, Copy)]
 pub enum Direction {
@@ -126,34 +132,114 @@ impl<'a> Vehicule<'a> {
         Ok(())
     }
 
-    pub fn collision(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
-        match self.direction {
-            Direction::North => {
-                let colliding = vehicle_data
-                    .iter()
-                    .any(|&(x, _, dir, turn)|
-                        dir == Direction::East &&
-                            turn == Turn::Forward &&
-                            x - 390 < 50
-                    );
 
-                if self.y + 50 > 390 && colliding {
-                    self.velocity = 0;
-                }
-            }
-            Direction::South => {
-                // Implement logic for South
-            }
-            Direction::East => {
-                // Implement logic for East
-            }
-            Direction::West => {
-                // Implement logic for West
-            }
+
+    pub fn get_priority(&self, other_dir: Direction, other_turn: Turn) -> VehiclePriority {
+        match (self.direction, self.turn, other_dir, other_turn) {
+            // Rule 1: Vehicles going straight have priority over turning vehicles
+            (_, Turn::Forward, _, turn) if turn != Turn::Forward => VehiclePriority::High,
+            (_, turn, _, Turn::Forward) if turn != Turn::Forward => VehiclePriority::Low,
+
+            // Rule 2: Right turns have priority over left turns
+            (_, Turn::Right, _, Turn::Left) => VehiclePriority::High,
+            (_, Turn::Left, _, Turn::Right) => VehiclePriority::Low,
+
+            // Rule 3: Right-hand traffic rule (vehicle coming from the right has priority)
+            (Direction::North, Turn::Forward, Direction::East, Turn::Forward) => VehiclePriority::Low,
+            (Direction::East, Turn::Forward, Direction::South, Turn::Forward) => VehiclePriority::Low,
+            (Direction::South, Turn::Forward, Direction::West, Turn::Forward) => VehiclePriority::Low,
+            (Direction::West, Turn::Forward, Direction::North, Turn::Forward) => VehiclePriority::Low,
+
+            // If directions are opposite or same, assign medium priority
+            _ => VehiclePriority::Medium
         }
     }
 
+    pub fn collision(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
+        const COLLISION_BUFFER: i32 = 40;
 
+        fn ranges_overlap(start1: i32, end1: i32, start2: i32, end2: i32) -> bool {
+            start1 < end2 && end1 > start2
+        }
+
+        fn is_in_intersection_zone(x: i32, y: i32) -> bool {
+            x >= 270 && x <= 390 && y >= 230 && y <= 415
+        }
+
+        // Calculate current vehicle's collision box
+        let self_x_range = (self.x, self.x + self.width as i32);
+        let self_y_range = (self.y, self.y + self.height as i32);
+
+        // Check if we're approaching or in the intersection
+        let is_near_intersection = match self.direction {
+            Direction::North => self.y > 415 && self.y <= 415 + COLLISION_BUFFER,
+            Direction::South => self.y < 230 && self.y >= 230 - COLLISION_BUFFER,
+            Direction::East => self.x < 390 && self.x >= 390 - COLLISION_BUFFER,
+            Direction::West => self.x > 270 && self.x <= 270 + COLLISION_BUFFER,
+        };
+
+        if is_near_intersection {
+            // Get all vehicles that could potentially cause a conflict
+            let potential_conflicts: Vec<_> = vehicle_data.iter()
+                .filter(|&&(other_x, other_y, _, _)| {
+                    is_in_intersection_zone(other_x, other_y) ||  // Vehicle in intersection
+                        match self.direction {
+                            Direction::North | Direction::South => {
+                                ranges_overlap(270, 390, other_x, other_x + 50)  // Check East-West corridor
+                            },
+                            Direction::East | Direction::West => {
+                                ranges_overlap(230, 415, other_y, other_y + 50)  // Check North-South corridor
+                            }
+                        }
+                })
+                .collect();
+
+            // Check if we need to stop based on priority rules
+            let should_stop = potential_conflicts.iter().any(|&&(other_x, other_y, other_dir, other_turn)| {
+                // First check if there's a potential physical collision
+                let physical_collision = match (self.direction, other_dir) {
+                    (Direction::North, Direction::East) | (Direction::North, Direction::West) => {
+                        ranges_overlap(self_x_range.0, self_x_range.1, other_x, other_x + 50)
+                    },
+                    (Direction::South, Direction::East) | (Direction::South, Direction::West) => {
+                        ranges_overlap(self_x_range.0, self_x_range.1, other_x, other_x + 50)
+                    },
+                    (Direction::East, Direction::North) | (Direction::East, Direction::South) => {
+                        ranges_overlap(self_y_range.0, self_y_range.1, other_y, other_y + 50)
+                    },
+                    (Direction::West, Direction::North) | (Direction::West, Direction::South) => {
+                        ranges_overlap(self_y_range.0, self_y_range.1, other_y, other_y + 50)
+                    },
+                    _ => false
+                };
+
+                if physical_collision {
+                    // Check priority rules
+                    match self.get_priority(other_dir, other_turn) {
+                        VehiclePriority::High => false,  // We have priority, don't stop
+                        VehiclePriority::Medium => {
+                            // For medium priority, stop only if other vehicle also has medium or high priority
+                            matches!(self.get_priority(other_dir, other_turn),
+                                VehiclePriority::Medium | VehiclePriority::High)
+                        },
+                        VehiclePriority::Low => true,  // We should yield
+                    }
+                } else {
+                    false
+                }
+            });
+
+            if should_stop {
+                self.velocity = 0;
+            } else {
+                // Only resume movement if we're completely clear
+                self.velocity = 5;
+            }
+        } else if self.velocity == 0 && !is_near_intersection {
+            // Resume movement if we're clear of the intersection
+            self.velocity = 5;
+        }
+    }
     pub fn update_position(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
         match self.direction {
             Direction::North => self.y -= self.velocity,
