@@ -2,13 +2,11 @@ use sdl2::render::Canvas;
 use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 use sdl2::video::Window;
-use std::cell::RefCell;
 use super::vehicules::Vehicule;
 
 
 pub struct  Path<'a> {
-   pub vehicules : RefCell<Vec< Vehicule<'a>>>,
-
+   pub vehicules : Vec< Vehicule<'a>>,
 }
 
 impl<'a>  Path<'a> {
@@ -47,7 +45,7 @@ impl<'a>  Path<'a> {
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         let _ = canvas.fill_rect(Rect::new(230, 230, 470 - 229, 470 - 229));
         Path {
-            vehicules: RefCell::new(Vec::new()),
+            vehicules: Vec::new(),
         }
         // canvas.present();
     }

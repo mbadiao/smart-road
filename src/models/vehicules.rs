@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use sdl2::keyboard::Keycode;
 
 const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(2000);
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Copy)]
 pub enum Direction {
     North,
     South,
@@ -20,6 +20,7 @@ pub enum Turn {
     Right,
     Forward
 }
+
 pub struct Vehicule<'a> {
     pub x: i32,
     pub y: i32,
@@ -46,7 +47,8 @@ impl<'a> Vehicule<'a> {
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
         let mut rng = rand::thread_rng();
-        let lane = rng.gen_range(1..=3);
+        // let lane = rng.gen_range(1..=3);
+        let lane = 3;
 
         let (x, y, angle) = match direction {
             Direction::North => match lane {
@@ -124,24 +126,49 @@ impl<'a> Vehicule<'a> {
         Ok(())
     }
 
-    pub fn update_position(&mut self) {
+    pub fn collision(&mut self, vehicule: &Vec<Vehicule>) {
+        match self.direction {
+            Direction::North => {
+                let tab: Vec<&Vehicule> = vehicule
+                    .iter()
+                    .filter(|&av| av.direction == Direction::East && av.turn == Turn::Forward && av.x - 390 < 50)
+                    .collect();
+                    
+                if self.y + 50 > 390 && !tab.is_empty() {
+                    self.velocity = 0;
+                }
+            }
+            Direction::South => {
+                // Implement logic for South
+            }
+            Direction::East => {
+                // Implement logic for East
+            }
+            Direction::West => {
+                // Implement logic for West
+            }
+        }
+    }
+    
+
+    pub fn update_position(&mut self, vehicules : &Vec<Vehicule<'_>>  ) {
         match self.direction {
             Direction::North => self.y -= self.velocity,
             Direction::South => self.y += self.velocity,
             Direction::East => self.x += self.velocity,
             Direction::West => self.x -= self.velocity,
         }
-
+        self.collision(&vehicules);
         let is_left = self.turn == Turn::Left;
         match self.direction {
-            Direction::North => {
+            Direction::North  => {
                 match  self.y {
                     425 => {
                         if !is_left {
                             self.execute_turn()
                         }
                     },
-                    300 => {
+                    310 => {
                         if is_left {
                             self.execute_turn()
                         }
@@ -150,9 +177,9 @@ impl<'a> Vehicule<'a> {
                 }
             },
 
-            Direction::South => {
+            Direction::South  => {
                 match  self.y {
-                    220 => {
+                    230 => {
                         if !is_left {
                             self.execute_turn()
                         }
