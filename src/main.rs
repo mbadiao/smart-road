@@ -1,8 +1,9 @@
+use smart_road::models::{path, vehicules::Vehicule, vehicules::Direction};
+use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::pixels::Color;
-use smart_road::models::{path, vehicules::Direction, vehicules::Vehicule};
 use std::collections::HashMap;
+use smart_road::models::vehicules::Turn;
 
 const WIDTH: u32 = 700;
 const HEIGHT: u32 = 700;
@@ -96,13 +97,17 @@ pub fn main() -> Result<(), String> {
                 _ => {}
             }
         }
+        // Update and render each vehicle
+        let vehicle_positions: Vec<(i32, i32, Direction, Turn)> = vehicles
+            .iter()
+            .map(|v| (v.x, v.y, v.direction, v.turn))
+            .collect();
 
-        // Obtenez une référence mutable unique de `vehicles`
-        for vehicle in vehicles.iter_mut() {
-            vehicle.update_position(&vehicles); // Passe une référence immuable directe
-            vehicle.render(&mut canvas)?;
+        for i in 0..vehicles.len() {
+            // Pass just the positions and relevant data for collision detection
+            vehicles[i].update_position(&vehicle_positions);
+            vehicles[i].render(&mut canvas)?;
         }
-        
 
         canvas.present();
         std::thread::sleep(std::time::Duration::from_millis(100));
@@ -110,3 +115,5 @@ pub fn main() -> Result<(), String> {
 
     Ok(())
 }
+
+

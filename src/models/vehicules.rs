@@ -1,4 +1,4 @@
-use rand::Rng;
+// use rand::Rng;
 use sdl2::image::{LoadTexture, InitFlag};
 use sdl2::render::{Texture, TextureCreator};
 use sdl2::video::WindowContext;
@@ -46,7 +46,7 @@ impl<'a> Vehicule<'a> {
         let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG)?;
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
-        let mut rng = rand::thread_rng();
+        // let mut rng = rand::thread_rng();
         // let lane = rng.gen_range(1..=3);
         let lane = 3;
 
@@ -126,15 +126,18 @@ impl<'a> Vehicule<'a> {
         Ok(())
     }
 
-    pub fn collision(&mut self, vehicule: &Vec<Vehicule>) {
+    pub fn collision(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
         match self.direction {
             Direction::North => {
-                let tab: Vec<&Vehicule> = vehicule
+                let colliding = vehicle_data
                     .iter()
-                    .filter(|&av| av.direction == Direction::East && av.turn == Turn::Forward && av.x - 390 < 50)
-                    .collect();
-                    
-                if self.y + 50 > 390 && !tab.is_empty() {
+                    .any(|&(x, _, dir, turn)|
+                        dir == Direction::East &&
+                            turn == Turn::Forward &&
+                            x - 390 < 50
+                    );
+
+                if self.y + 50 > 390 && colliding {
                     self.velocity = 0;
                 }
             }
@@ -149,16 +152,16 @@ impl<'a> Vehicule<'a> {
             }
         }
     }
-    
 
-    pub fn update_position(&mut self, vehicules : &Vec<Vehicule<'_>>  ) {
+
+    pub fn update_position(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
         match self.direction {
             Direction::North => self.y -= self.velocity,
             Direction::South => self.y += self.velocity,
             Direction::East => self.x += self.velocity,
             Direction::West => self.x -= self.velocity,
         }
-        self.collision(&vehicules);
+        self.collision(vehicle_data);
         let is_left = self.turn == Turn::Left;
         match self.direction {
             Direction::North  => {
