@@ -11,7 +11,8 @@ pub enum VehiclePriority {
     Medium, // Yield to high priority
     Low,    // Yield to high and medium priority
 }
-const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(2000);
+
+const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(1500);
 #[derive(Clone, PartialEq, Eq, Copy)]
 pub enum Direction {
     North,
@@ -277,7 +278,6 @@ impl<'a> Vehicule<'a> {
             if should_stop {
                 self.velocity = 0;
             } else {
-                // Only resume movement if we're completely clear
                 self.velocity = 5;
             }
         } else if self.velocity == 0 && !is_near_intersection {
