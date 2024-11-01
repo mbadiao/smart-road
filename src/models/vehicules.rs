@@ -8,11 +8,12 @@ use sdl2::keyboard::Keycode;
 
 
 pub enum VehiclePriority {
-    High,    // Has right of way
-    Medium,  // Yield to high priority
-    Low      // Yield to high and medium priority
+    High,
+    Medium,
+    Low
 }
-const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(2000);
+
+const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(1500);
 #[derive(Clone, PartialEq, Eq, Copy)]
 pub enum Direction {
     North,
@@ -54,7 +55,7 @@ impl<'a> Vehicule<'a> {
 
         // let mut rng = rand::thread_rng();
         // let lane = rng.gen_range(1..=3);
-        let lane = 3;
+        let lane = 2;
 
         let (x, y, angle) = match direction {
             Direction::North => match lane {
@@ -196,19 +197,32 @@ impl<'a> Vehicule<'a> {
 
             // Check if we need to stop based on priority rules
             let should_stop = potential_conflicts.iter().any(|&&(other_x, other_y, other_dir, other_turn)| {
+
                 // First check if there's a potential physical collision
                 let physical_collision = match (self.direction, other_dir) {
-                    (Direction::North, Direction::East) | (Direction::North, Direction::West) => {
+                    (Direction::North, Direction::East)  => {
                         ranges_overlap(self_x_range.0, self_x_range.1, other_x, other_x + 50)
                     },
-                    (Direction::South, Direction::East) | (Direction::South, Direction::West) => {
+                    (Direction::East, Direction::North)  => {
                         ranges_overlap(self_x_range.0, self_x_range.1, other_x, other_x + 50)
                     },
-                    (Direction::East, Direction::North) | (Direction::East, Direction::South) => {
+                    (Direction::North, Direction::West)  => {
                         ranges_overlap(self_y_range.0, self_y_range.1, other_y, other_y + 50)
                     },
-                    (Direction::West, Direction::North) | (Direction::West, Direction::South) => {
+                    (Direction::West, Direction::North)  => {
                         ranges_overlap(self_y_range.0, self_y_range.1, other_y, other_y + 50)
+                    },
+                     (Direction::South, Direction::West) => {
+                        ranges_overlap(self_x_range.0, self_x_range.1, other_x, other_x + 50)
+                    },
+                    // (Direction::West, Direction::South) => {
+                    //     ranges_overlap(self_x_range.0, self_x_range.1, other_x, other_x + 50)
+                    // },
+                    (Direction::South, Direction::East) => {
+                        ranges_overlap(self_x_range.0, self_x_range.1, other_x, other_x + 50)
+                    },
+                    (Direction::East, Direction::South) => {
+                        ranges_overlap(self_x_range.0, self_x_range.1, other_x, other_x + 50)
                     },
                     _ => false
                 };
@@ -228,11 +242,11 @@ impl<'a> Vehicule<'a> {
                     false
                 }
             });
+            println!("should_stop:{}", should_stop);
 
             if should_stop {
                 self.velocity = 0;
             } else {
-                // Only resume movement if we're completely clear
                 self.velocity = 5;
             }
         } else if self.velocity == 0 && !is_near_intersection {
