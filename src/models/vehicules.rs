@@ -14,14 +14,14 @@ pub enum VehiclePriority {
 
 const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(1500);
 const SAFETY_DISTANCE: i32 = 100;
-#[derive(Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub enum Direction {
     North,
     South,
     East,
     West,
 }
-#[derive(Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub enum Turn {
     Left,
     Right,
@@ -139,7 +139,7 @@ impl<'a> Vehicule<'a> {
             // Rule 1: Vehicles going straight have priority over turning vehicles
             (_, Turn::Forward, _, turn) if turn != Turn::Forward => VehiclePriority::High,
             (_, turn, _, Turn::Forward) if turn != Turn::Forward => VehiclePriority::Low,
-            (_, Turn::Forward, _, Turn::Forward) if other_dir == Direction::South ||  other_dir == Direction::North   => VehiclePriority::Low,
+            // (_, Turn::Forward, _, Turn::Forward) if other_dir == Direction::South ||  other_dir == Direction::North   => VehiclePriority::Low,
 
             // Rule 2: Right turns have priority over left turns
             (_, Turn::Right, _, Turn::Left) => VehiclePriority::High,
@@ -230,19 +230,30 @@ impl<'a> Vehicule<'a> {
         };
 
         if is_near_intersection {
+            //  println!("sa direction a l'intersection: {:?} son x: {} son y: {} sa route: {:?}", self.direction, self.x, self.y, self.turn);
+
             // Get all vehicles that could potentially cause a conflict
             let potential_conflicts: Vec<_> = vehicle_data
                 .iter()
                 .filter(|&&(other_x, other_y, _, _)| {
-                    is_in_intersection_zone(other_x, other_y) ||  // Vehicle in intersection
-                        match self.direction {
-                            Direction::North | Direction::South => {
-                                ranges_overlap(270, 390, other_x, other_x + 50)  // Check East-West corridor
-                            },
-                            Direction::East | Direction::West => {
-                                ranges_overlap(230, 415, other_y, other_y + 50)  // Check North-South corridor
-                            }
-                        }
+                    // println!("{}", is_in_intersection_zone(other_x, other_y));
+                    is_in_intersection_zone(other_x, other_y)  // Vehicle in intersection
+                        // match self.direction {
+                        //     Direction::North=> {
+                        //         println!("c'est la {} et l'autre: {}", self.x, other_y);
+                        //         ranges_overlap(270, 390, other_x, other_x + 50)  // Check East-West corridor
+                        //     },
+                        //      Direction::South => {
+                        //         ranges_overlap(270, 390, other_x, other_x + 50)  // Check East-West corridor
+                        //     },
+                        //     Direction::East => {
+                        //         ranges_overlap(230, 415, other_y, other_y + 50)  // Check North-South corridor
+                        //     }
+                        //     Direction::West => {
+                                
+                        //         ranges_overlap(230, 415, other_y, other_y + 50)  // Check North-South corridor
+                        //     }
+                        // }
                 })
                 .collect();
 
@@ -253,57 +264,104 @@ impl<'a> Vehicule<'a> {
                     .any(|&&(other_x, other_y, other_dir, other_turn)| {
                         // First check if there's a potential physical collision
                         let physical_collision = match (self.direction, other_dir) {
-                            (Direction::North, Direction::East)
-                            | (Direction::North, Direction::West) => ranges_overlap(
-                                self_x_range.0,
-                                self_x_range.1,
-                                other_x,
-                                other_x + 50,
-                            ),
-                            (Direction::South, Direction::East)
-                            | (Direction::South, Direction::West) => ranges_overlap(
-                                self_x_range.0,
-                                self_x_range.1,
-                                other_x,
-                                other_x + 50,
-                            ),
-                            (Direction::East, Direction::North)
-                            | (Direction::East, Direction::South) => ranges_overlap(
-                                self_y_range.0,
-                                self_y_range.1,
-                                other_y,
-                                other_y + 50,
-                            ),
-                            (Direction::West, Direction::North)
-                            | (Direction::West, Direction::South) => ranges_overlap(
-                                self_y_range.0,
-                                self_y_range.1,
-                                other_y,
-                                other_y + 50,
-                            ),
+                            // (Direction::North, Direction::East)
+                            //  => {
+                            // println!("il y a potentiel conflit : {:?} l'autre : {:?}", self.direction, other_dir);
+                            //    return ranges_overlap(
+                            //         self_x_range.0,
+                            //         self_x_range.1,
+                            //         other_x,
+                            //         other_x + 50,
+                            //     )
+
+                            // },
+                            (Direction::West, Direction::North) => {
+                                if 390 + 50 > self.x &&  230 + 50 > other_y {
+                                    return true
+                                }
+                                // println!("il y a potentiel conflit : {:?} avec x: {} l'autre : {:?}", self.direction,self.x, other_dir);
+                                // let ok :bool = self.x - 100 > other_y - 100
+                                return false
+
+                            } ,
+                            (Direction::North, Direction::West) => {
+                                println!("il y a potentiel conflit : {:?} avec x: {} l'autre : {:?}", self.direction,self.x, other_dir);
+                                // let ok :bool = self.x - 100 > other_y - 100
+                                return false
+
+                            } ,
+                            // (Direction::South, Direction::East)
+                            // | (Direction::South, Direction::West) => ranges_overlap(
+                            //     self_x_range.0,
+                            //     self_x_range.1,
+                            //     other_x,
+                            //     other_x + 50,
+                            // ),
+                            // (Direction::East, Direction::North)
+                            // | (Direction::East, Direction::South) => ranges_overlap(
+                            //     self_y_range.0,
+                            //     self_y_range.1,
+                            //     other_y,
+                            //     other_y + 50,
+                            // ),
+                            // (Direction::West, Direction::North) => {
+                            //         // ranges_overlap(
+                            //         //     self_x_range.0,
+                            //         //     self_x_range.1,
+                            //         //     other_y,
+                            //         //     other_y + 50,
+                            //         // ),
+                            //         println!("{} son x: {}", "okkk", self.x);
+
+                            //         return false
+                            // }
+                           
                             _ => false,
                         };
 
-                        println!("y : {} x: {}", self.y, self.x  );
+                        // println!("y : {} x: {}", self.y, self.x  );
 
                         if physical_collision {
                             // Check priority rules
                             match self.get_priority(other_dir, other_turn) {
                                 VehiclePriority::High => {
-                                    let ok : bool = match (self.direction, other_dir) {
-                                        (Direction::North, Direction::East) => self.y - 350 > other_x - 350,
-                                        (Direction::North, Direction::West) => self.y - 310 > other_x + 310,
-                                        (Direction::South, Direction::West) => self.y - 310 > other_x + 310,
-                                        (Direction::West, Direction::South) => self.x - 350 > other_y - 350,
+                                    // println!("{}","ooooooooooooooooo");
 
-                                        // (Direction::East, Direction::South) => self.x - 310 > other_y + 310,
+                                    // println!("{}", self.y - 350 > other_x - 350);
+                                    // let ok : bool = match (self.direction, other_dir) {
+                                    //     (Direction::North, Direction::East) => self.y - 350 > other_x - 350,
+                                        
+                                    //     (Direction::North, Direction::West) => self.y - 310 > other_x + 310,
+                                    //     // (Direction::South, Direction::West) => self.y - 310 > other_x + 310,
+                                    //     // (Direction::West, Direction::South) => self.x - 350 > other_y - 350,
+
+                                    //     // (Direction::East, Direction::South) => self.x - 310 > other_y + 310,
                                         
                                       
-                                        _ => false,
-                                    };
-                                    return ok;
+                                    //     _ => false,
+                                    // };
+                                    return false;
                                 } // We have priority, don't stop
-                                VehiclePriority::Medium => true,
+                                VehiclePriority::Medium => {
+                                    // println!("{}","ooooooooooooooooo");
+
+                                    // println!("{} son y: {} son x: {}", self.y - 350 > other_x - 350, self.y, self.x);
+                                    // let ok : bool = match (self.direction, other_dir) {
+                                    //     (Direction::North, Direction::East) => self.y - 350 > other_x - 350,
+                                        
+                                    //     (Direction::North, Direction::West) => self.y - 310 > other_x + 310,
+                                    //     // (Direction::South, Direction::West) => self.y - 310 > other_x + 310,
+                                    //     // (Direction::West, Direction::South) => self.x - 350 > other_y - 350,
+
+                                    //     // (Direction::East, Direction::South) => self.x - 310 > other_y + 310,
+                                        
+                                      
+                                    //     _ => false,
+                                    // };
+                                    // println!("{}",ok);
+                                    return true
+                                },
+                                
                                 // {
                                 //     // For medium priority, stop only if other vehicle also has medium or high priority
                                 //     matches!(
@@ -319,6 +377,7 @@ impl<'a> Vehicule<'a> {
                     });
 
             if should_stop {
+                 println!("celui qui s'est arrete: {:?} son x: {} son y: {} sa route: {:?}", self.direction, self.x, self.y, self.turn);
                 self.velocity = 0;
             } else {
                 self.velocity = 5;
