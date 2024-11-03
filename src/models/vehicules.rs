@@ -13,6 +13,7 @@ pub enum VehiclePriority {
 }
 
 const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(1500);
+const SAFETY_DISTANCE: i32 = 100;
 #[derive(Clone, PartialEq, Eq, Copy)]
 pub enum Direction {
     North,
@@ -52,7 +53,7 @@ impl<'a> Vehicule<'a> {
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
         let mut rng = rand::thread_rng();
-        let lane = rng.gen_range(2..=2);
+        let lane = rng.gen_range(3..=3);
         // let lane = 2;
 
         let (x, y, angle) = match direction {
@@ -162,10 +163,52 @@ impl<'a> Vehicule<'a> {
             _ => VehiclePriority::Medium,
         }
     }
+    fn check_safety_distance(&self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) -> bool {
+        for &(other_x, other_y, other_dir, _) in vehicle_data {
+            if self.direction == other_dir {
+                // Vérifie uniquement les véhicules dans la même direction
+                match self.direction {
+                    Direction::North => {
+                        if self.x == other_x && // Même voie
+                            self.y > other_y && // Véhicule devant
+                            self.y - other_y < SAFETY_DISTANCE {
+                            return true;
+                        }
+                    },
+                    Direction::South => {
+                        if self.x == other_x &&
+                            self.y < other_y &&
+                            other_y - self.y < SAFETY_DISTANCE {
+                            return true;
+                        }
+                    },
+                    Direction::East => {
+                        if self.y == other_y &&
+                            self.x < other_x &&
+                            other_x - self.x < SAFETY_DISTANCE {
+                            return true;
+                        }
+                    },
+                    Direction::West => {
+                        if self.y == other_y &&
+                            self.x > other_x &&
+                            self.x - other_x < SAFETY_DISTANCE {
+                            return true;
+                        }
+                    },
+                }
+            }
+        }
+        false
+    }
 
     pub fn collision(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
         const COLLISION_BUFFER: i32 = 40;
 
+        if self.check_safety_distance(vehicle_data) {
+            self.velocity = 0;
+            return;
+        }
         fn ranges_overlap(start1: i32, end1: i32, start2: i32, end2: i32) -> bool {
             start1 < end2 && end1 > start2
         }
@@ -251,7 +294,7 @@ impl<'a> Vehicule<'a> {
                                         (Direction::North, Direction::East) => self.y - 350 > other_x - 350,
                                         (Direction::North, Direction::West) => self.y - 310 > other_x + 310,
                                         (Direction::South, Direction::West) => self.y - 310 > other_x + 310,
-                                        (Direction::West, Direction::South) => self.x - 310 > other_y - 310,
+                                        (Direction::West, Direction::South) => self.x - 350 > other_y - 350,
 
                                         // (Direction::East, Direction::South) => self.x - 310 > other_y + 310,
                                         
