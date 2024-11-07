@@ -163,6 +163,18 @@ impl<'a> Vehicule<'a> {
             _ => VehiclePriority::Medium,
         }
     }
+    // pub fn collision(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
+    //
+    // }
+    fn is_at_intersection_start(&self) -> bool {
+
+        match self.direction {
+            Direction::North => self.y <= 480 && self.y > 470, // && self.x >= intersection_start_x && self.x <= intersection_end_x,
+            Direction::South => self.y >= 185 && self.y < 190, // && self.x >= intersection_start_x && self.x <= intersection_end_x,
+            Direction::East => self.x >= 185 && self.x < 190, // && self.y >= intersection_start_y && self.y <= intersection_end_y,
+            Direction::West => self.x <= 480 && self.x > 470, // && self.y >= intersection_start_y && self.y <= intersection_end_y,
+        }
+    }
     fn check_safety_distance(&self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) -> bool {
         for &(other_x, other_y, other_dir, _) in vehicle_data {
             if self.direction == other_dir {
@@ -201,103 +213,6 @@ impl<'a> Vehicule<'a> {
         }
         false
     }
-
-    pub fn collision(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
-        const COLLISION_BUFFER: i32 = 40;
-        const MIN_SPEED: i32 = 2;
-
-        if self.check_safety_distance(vehicle_data) {
-            self.velocity = 0;
-            return;
-        }
-
-        fn ranges_overlap(start1: i32, end1: i32, start2: i32, end2: i32) -> bool {
-            start1 < end2 && end1 > start2
-        }
-
-        fn is_in_intersection_zone(x: i32, y: i32) -> bool {
-            x >= 270 && x <= 390 && y >= 230 && y <= 415
-        }
-
-        let self_x_range = (self.x, self.x + self.width as i32);
-        let self_y_range = (self.y, self.y + self.height as i32);
-
-        let is_near_intersection = match self.direction {
-            Direction::North => self.y > 415 && self.y <= 415 + COLLISION_BUFFER || self.y > 270 && self.y <= 270 + COLLISION_BUFFER,
-            Direction::South => self.y < 230 && self.y >= 230 - COLLISION_BUFFER || self.y < 415 && self.y >= 415 - COLLISION_BUFFER,
-            Direction::East => self.x < 390 && self.x >= 390 - COLLISION_BUFFER || self.x < 270 && self.x >= 270 - COLLISION_BUFFER,
-            Direction::West => self.x > 270 && self.x <= 270 + COLLISION_BUFFER || self.x > 390 && self.x <= 390 + COLLISION_BUFFER,
-        };
-
-        if is_near_intersection {
-            let potential_conflicts: Vec<_> = vehicle_data
-                .iter()
-                .filter(|&&(other_x, other_y, _, _)| {
-                    is_in_intersection_zone(other_x, other_y) ||
-                        match self.direction {
-                            Direction::North | Direction::South => ranges_overlap(270, 390, other_x, other_x + 50),
-                            Direction::East | Direction::West => ranges_overlap(230, 415, other_y, other_y + 50),
-                        }
-                })
-                .collect();
-
-            let should_slow_down = potential_conflicts
-                .iter()
-                .any(|&&(other_x, other_y, other_dir, other_turn)| {
-                    let physical_collision = match (self.direction, other_dir) {
-                        (Direction::North, Direction::East)
-                        | (Direction::North, Direction::West) => ranges_overlap(
-                            self_x_range.0,
-                            self_x_range.1,
-                            other_x,
-                            other_x + 50,
-                        ),
-                        (Direction::South, Direction::East)
-                        | (Direction::South, Direction::West) => ranges_overlap(
-                            self_x_range.0,
-                            self_x_range.1,
-                            other_x,
-                            other_x + 50,
-                        ),
-                        (Direction::East, Direction::North)
-                        | (Direction::East, Direction::South) => ranges_overlap(
-                            self_y_range.0,
-                            self_y_range.1,
-                            other_y,
-                            other_y + 50,
-                        ),
-                        (Direction::West, Direction::North)
-                        | (Direction::West, Direction::South) => ranges_overlap(
-                            self_y_range.0,
-                            self_y_range.1,
-                            other_y,
-                            other_y + 50,
-                        ),
-                        _ => false,
-                    };
-
-                    if physical_collision {
-                        match self.get_priority(other_dir, other_turn) {
-                            VehiclePriority::High => false,
-                            VehiclePriority::Medium | VehiclePriority::Low => true,
-                        }
-                    } else {
-                        false
-                    }
-                });
-
-            if should_slow_down {
-                // self.velocity = (self.velocity - 1).max(MIN_SPEED); // Reduce speed gradually
-                self.velocity = 0;
-            } else {
-                self.velocity = 5;
-            }
-        } else if self.velocity < 5 && !is_near_intersection {
-            // self.velocity += 1;
-            self.velocity = 5;
-        }
-    }
-
     pub fn update_position(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
         match self.direction {
             Direction::North => self.y -= self.velocity,
@@ -305,7 +220,12 @@ impl<'a> Vehicule<'a> {
             Direction::East => self.x += self.velocity,
             Direction::West => self.x -= self.velocity,
         }
-        self.collision(vehicle_data);
+        if self.is_at_intersection_start() {
+            if self.turn != Turn::Right {
+                self.velocity = 0;
+            }
+            return;
+        }
         let is_left = self.turn == Turn::Left;
         match self.direction {
             Direction::North => match self.y {
@@ -379,7 +299,7 @@ impl<'a> Vehicule<'a> {
                 Direction::North => 0.0,
                 Direction::South => 180.0,
             };
-            self.turn = Turn::Forward; // Reset turn after executing it
+            self.turn = Turn::Forward;
         }
     }
 }
