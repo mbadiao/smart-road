@@ -97,14 +97,12 @@ pub fn main() -> Result<(), String> {
                 _ => {}
             }
         }
-        // Update and render each vehicle
         let vehicle_positions: Vec<(i32, i32, Direction, Turn)> = vehicles
             .iter()
             .map(|v| (v.x, v.y, v.direction, v.turn))
             .collect();
 
         for i in 0..vehicles.len() {
-            // Pass just the positions and relevant data for collision detection
             vehicles[i].update_position(&vehicle_positions);
             vehicles[i].render(&mut canvas)?;
         }

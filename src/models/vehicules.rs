@@ -53,8 +53,7 @@ impl<'a> Vehicule<'a> {
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
         let mut rng = rand::thread_rng();
-        let lane = rng.gen_range(2..=3);
-        // let lane = 2;
+        let lane = rng.gen_range(3..=3);
 
         let (x, y, angle) = match direction {
             Direction::North => match lane {
@@ -133,9 +132,7 @@ impl<'a> Vehicule<'a> {
         )?;
         Ok(())
     }
-    fn is_in_intersection_zone(&self) -> bool {
-        self.x >= 230 && self.x <= 415 && self.y >= 230 && self.y <= 415
-    }
+
 
     pub fn get_priority(&self, other_dir: Direction, other_turn: Turn) -> VehiclePriority {
         match (self.direction, self.turn, other_dir, other_turn) {
@@ -166,9 +163,7 @@ impl<'a> Vehicule<'a> {
             _ => VehiclePriority::Medium,
         }
     }
-    // pub fn collision(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
-    //
-    // }
+
     fn is_at_intersection_start(&self) -> bool {
 
         match self.direction {
@@ -220,15 +215,14 @@ impl<'a> Vehicule<'a> {
     }
 
     fn collision(&self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) -> bool {
-        for &(vx, vy, dir, turn) in vehicle_data.iter() {
+        let mut any_collision = false; 
+        for &(vx, _vy, dir, turn) in vehicle_data.iter() {
             match self.direction {
                 Direction::North => {
                     let mut egale = false;
                     if dir == Direction::East && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
                         if self.x > vx && (self.y - self.x) > (self.x - vx) && self.y - self.x < 200{
-                            println!("bien");
-                            println!("{}", self.y - self.x);
-                            return true;
+                            any_collision = true;
                         }
                         if self.y - self.x  == self.x - vx {
                             egale = true
@@ -236,25 +230,26 @@ impl<'a> Vehicule<'a> {
                     }
                     if dir == Direction::West && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
                         if  self.x < vx && (self.y - self.x) > (vx - self.x)   {
-                            println!("bien");
-                            println!("{}", self.y - self.x);
-                            return true;
+                            any_collision = true;
                         }
                         if self.y - self.x  == vx - self.x {
                             egale = true
                         }
                     } 
+
+                    if egale {
+                        any_collision = true
+                    }
                     
-                    return egale;
                 }
 
-               _=> return false
+               _=>  continue
             }
         }
-        false
+        any_collision
     }
     
-   
+
     pub fn update_position(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
         match self.direction {
             Direction::North => self.y -= self.velocity,
@@ -262,26 +257,26 @@ impl<'a> Vehicule<'a> {
             Direction::East => self.x += self.velocity,
             Direction::West => self.x -= self.velocity,
         }
-        // if self.is_at_intersection_start() {
-        //     if self.turn != Turn::Right {
-        //         self.velocity = 0;
-        //     }
-        //     return;
-        // }
 
-        if self.collision(vehicle_data) {
-            self.velocity = 0
-        } else {
-            if self.velocity == 0 {
-                self.velocity = 5
+        if self.is_at_intersection_start() {
+            if self.turn != Turn::Right {
+                let  countinus  = vehicle_data.iter().any(|&x| 
+                    match self.get_priority(x.2, x.3) {
+                        VehiclePriority::High => false,
+                        VehiclePriority::Low => true,
+                        VehiclePriority::Medium => true
+                    }
+                );
+                println!("{} - {} - {:?}" ,countinus, self.collision(vehicle_data), self.direction);
+                if countinus && self.collision(vehicle_data){
+                    self.velocity = 0;
+                } else {
+                    self.velocity = 5
+                }
             }
+            return;
         }
 
-        // if self.check_safety_distance(vehicle_data) {
-        //     self.velocity = 2
-        // } else { // la fonction pour diminuer ou augmenter la vitesse doit etre ici
-        //     self.velocity = 5
-        // }
         let is_left = self.turn == Turn::Left;
         match self.direction {
             Direction::North => match self.y {
