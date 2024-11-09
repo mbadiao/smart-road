@@ -248,12 +248,37 @@ impl<'a> Vehicule<'a> {
                         if self.x > vx && (self.y  - self.x).abs() > (self.x - vx) && self.y <= vx {
                             any_collision = true;
                         }
-                        if self.y - self.x == self.x - vx {
+                        // if self.y - self.x == self.x - vx {
+                        //     egale = true;
+                        // }
+                    }
+                    if dir == Direction::West && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                        if self.x < vx && (self.y - self.x).abs() > (vx - self.x) && self.y <= vx {
+                            any_collision = true;
+                        }
+                        if self.y - self.x == vx - self.x {
                             egale = true;
                         }
                     }
-                    if dir == Direction::West && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
-                        if self.x < vx && (self.y - self.x).abs() > (vx - self.x) && self.y >= vx {
+                
+                    if egale {
+                        any_collision = true;
+                    }
+                }
+
+                Direction::East => {
+                    let mut egale = false;
+                    if dir == Direction::North && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                        // println!("{} {:?} {:?}", self.x > vx , self.direction, vehicle_data);
+                        if self.x > vx && (self.y - self.x).abs() > ( vy - self.x) && self.y <= vx {
+                            any_collision = true;
+                        }
+                        // if self.y - self.x == self.x - vx {
+                        //     egale = true;
+                        // }
+                    }
+                    if dir == Direction::South && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                        if self.x < vx && (self.y - self.x).abs() > (vx - self.x) && self.y <= vx {
                             any_collision = true;
                         }
                         if self.y - self.x == vx - self.x {
@@ -266,7 +291,30 @@ impl<'a> Vehicule<'a> {
                     }
                 }
                 
+                Direction::West => {
+                    let mut egale = false;
+                    if dir == Direction::North && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                        // println!("{} {:?} {:?}", self.x > vx , self.direction, vehicle_data);
+                        if self.x < vx && (self.y - self.x).abs() > ( vy - self.x).abs()  {
+                            any_collision = true;
+                        }
+                        // if self.y - self.x == self.x - vx {
+                        //     egale = true;
+                        // }
+                    }
+                    if dir == Direction::South && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                        if self.x > vx && (self.y - self.x).abs() > (vx - self.x).abs()  {
+                            any_collision = true;
+                        }
+                        if self.y - self.x == vx - self.x {
+                            egale = true;
+                        }
+                    }
                 
+                    if egale {
+                        any_collision = true;
+                    }
+                }
                 
 
                _=>  continue
