@@ -53,7 +53,7 @@ impl<'a> Vehicule<'a> {
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
         let mut rng = rand::thread_rng();
-        let lane = rng.gen_range(2..=3);
+        let lane = rng.gen_range(3..=3);
 
         let (x, y, angle) = match direction {
             Direction::North => match lane {
@@ -165,12 +165,11 @@ impl<'a> Vehicule<'a> {
     }
 
     fn is_at_intersection_start(&self) -> bool {
-
         match self.direction {
-            Direction::North => self.y <= 480 && self.y > 470, // && self.x >= intersection_start_x && self.x <= intersection_end_x,
-            Direction::South => self.y >= 185 && self.y < 190, // && self.x >= intersection_start_x && self.x <= intersection_end_x,
-            Direction::East => self.x >= 185 && self.x < 190, // && self.y >= intersection_start_y && self.y <= intersection_end_y,
-            Direction::West => self.x <= 480 && self.x > 470, // && self.y >= intersection_start_y && self.y <= intersection_end_y,
+            Direction::North => self.y <= 480 && self.y > 170, // && self.x >= intersection_start_x && self.x <= intersection_end_x,
+            Direction::South => self.y >= 185 && self.y < 440, // && self.x >= intersection_start_x && self.x <= intersection_end_x,
+            Direction::East => self.x >= 185 && self.x < 440, // && self.y >= intersection_start_y && self.y <= intersection_end_y,
+            Direction::West => self.x <= 480 && self.x > 170, // && self.y >= intersection_start_y && self.y <= intersection_end_y,
         }
     }
 
@@ -340,13 +339,12 @@ impl<'a> Vehicule<'a> {
                     }
                 );
                 println!("{} - {} - {:?}" ,countinus, self.collision(vehicle_data), self.direction);
-                if countinus && self.collision(vehicle_data){
+                if  self.collision(vehicle_data){
                     self.velocity = 0;
                 } else {
                     self.velocity = 5
                 }
             }
-            return;
         }
 
         let is_left = self.turn == Turn::Left;
