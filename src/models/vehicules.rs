@@ -221,7 +221,7 @@ impl<'a> Vehicule<'a> {
                 Direction::North => {
                     let mut egale = false;
                     if dir == Direction::East && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
-                        if self.x > vx && (self.y - self.x) > (self.x - vx) && self.y - self.x < 200{
+                        if self.x > vx && (self.y - self.x) > (self.x - vx) {
                             any_collision = true;
                         }
                         if self.y - self.x  == self.x - vx {
@@ -240,7 +240,6 @@ impl<'a> Vehicule<'a> {
                     if egale {
                         any_collision = true
                     }
-                    
                 }
 
                _=>  continue
