@@ -13,7 +13,7 @@ pub enum VehiclePriority {
 }
 
 const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(1500);
-const SAFETY_DISTANCE: i32 = 100;
+const SAFETY_DISTANCE: i32 = 60;
 #[derive(Clone, PartialEq, Eq, Copy, Debug)]
 pub enum Direction {
     North,
@@ -53,7 +53,7 @@ impl<'a> Vehicule<'a> {
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
         let mut rng = rand::thread_rng();
-        let lane = rng.gen_range(2..=3);
+        let lane = rng.gen_range(1..=3);
 
         let (x, y, angle) = match direction {
             Direction::North => match lane {
@@ -160,8 +160,8 @@ impl<'a> Vehicule<'a> {
                 // Vérifie uniquement les véhicules dans la même direction
                 match self.direction {
                     Direction::North => {
-                        if self.x == other_x && // Même voie
-                            self.y > other_y && // Véhicule devant
+                        if self.x == other_x && 
+                            self.y > other_y &&
                             self.y - other_y < SAFETY_DISTANCE {
                             return true;
                         }
@@ -351,6 +351,11 @@ impl<'a> Vehicule<'a> {
     }
 
     pub fn update_position(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
+
+        if self.check_safety_distance(vehicle_data) {
+            self.velocity = 0; 
+        }
+
         match self.direction {
             Direction::North => self.y -= self.velocity,
             Direction::South => self.y += self.velocity,
