@@ -7,9 +7,9 @@ use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 pub enum VehiclePriority {
-    High,  
+    High,
     Medium,
-    Low,   
+    Low,
 }
 
 const VEHICLE_CREATION_COOLDOWN: Duration = Duration::from_millis(1500);
@@ -133,14 +133,21 @@ impl<'a> Vehicule<'a> {
         Ok(())
     }
 
-
     pub fn get_priority(&self, other_dir: Direction, other_turn: Turn) -> VehiclePriority {
         match (self.direction, self.turn, other_dir, other_turn) {
-            (Direction::North ,  _, Direction::West, Turn::Forward | Turn::Left) => VehiclePriority::Low,
-            (Direction::West ,  _, Direction::South, Turn::Forward | Turn::Left) => VehiclePriority::Low,
-            (Direction::South ,  _, Direction::East, Turn::Forward | Turn::Left) => VehiclePriority::Low,
-            (Direction::East ,  _, Direction::North, Turn::Forward | Turn::Left) => VehiclePriority::Low,
-             _ => VehiclePriority::High,
+            (Direction::North, _, Direction::West, Turn::Forward | Turn::Left) => {
+                VehiclePriority::Low
+            }
+            (Direction::West, _, Direction::South, Turn::Forward | Turn::Left) => {
+                VehiclePriority::Low
+            }
+            (Direction::South, _, Direction::East, Turn::Forward | Turn::Left) => {
+                VehiclePriority::Low
+            }
+            (Direction::East, _, Direction::North, Turn::Forward | Turn::Left) => {
+                VehiclePriority::Low
+            }
+            _ => VehiclePriority::High,
         }
     }
 
@@ -153,194 +160,234 @@ impl<'a> Vehicule<'a> {
         }
     }
 
-    
     pub fn check_safety_distance(&self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) -> bool {
         for &(other_x, other_y, other_dir, _) in vehicle_data {
             if self.direction == other_dir {
                 // Vérifie uniquement les véhicules dans la même direction
                 match self.direction {
                     Direction::North => {
-                        if self.x == other_x && 
-                            self.y > other_y &&
-                            self.y - other_y < SAFETY_DISTANCE {
+                        if self.x == other_x
+                            && self.y > other_y
+                            && self.y - other_y < SAFETY_DISTANCE
+                        {
                             return true;
                         }
-                    },
+                    }
                     Direction::South => {
-                        if self.x == other_x &&
-                            self.y < other_y &&
-                            other_y - self.y < SAFETY_DISTANCE {
+                        if self.x == other_x
+                            && self.y < other_y
+                            && other_y - self.y < SAFETY_DISTANCE
+                        {
                             return true;
                         }
-                    },
+                    }
                     Direction::East => {
-                        if self.y == other_y &&
-                            self.x < other_x &&
-                            other_x - self.x < SAFETY_DISTANCE {
+                        if self.y == other_y
+                            && self.x < other_x
+                            && other_x - self.x < SAFETY_DISTANCE
+                        {
                             return true;
                         }
-                    },
+                    }
                     Direction::West => {
-                        if self.y == other_y &&
-                            self.x > other_x &&
-                            self.x - other_x < SAFETY_DISTANCE {
+                        if self.y == other_y
+                            && self.x > other_x
+                            && self.x - other_x < SAFETY_DISTANCE
+                        {
                             return true;
                         }
-                    },
+                    }
                 }
             }
         }
         false
-    }   
+    }
 
-    fn collision(&self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) -> (bool, (Direction, (Direction, i32, i32)), (i32, i32)) {
-        let mut direction_other   = (self.direction, self.x, self.y);
-        let mut any_collision = false; 
+    fn collision(
+        &self,
+        vehicle_data: &Vec<(i32, i32, Direction, Turn)>,
+    ) -> (bool, (Direction, (Direction, i32, i32)), (i32, i32)) {
+        let mut direction_other = (self.direction, self.x, self.y);
+        let mut any_collision = false;
         let mut distance = (0, 0);
         for &(vx, vy, dir, turn) in vehicle_data.iter() {
             match self.direction {
                 Direction::North => {
-                    let  egale = false;
-                    if dir == Direction::East && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
-                         direction_other = (Direction::East, vx, vy);
-                         distance = ((self.y - vy).abs(),  (self.x - vx).abs());
-                        if self.x + 70 >= vx && (self.y - vy).abs() >= (self.x - vx).abs() && vy <= self.y {
+                    let egale = false;
+                    if dir == Direction::East
+                        && (turn == Turn::Forward
+                            || (turn == Turn::Left && self.turn == Turn::Left))
+                    {
+                        direction_other = (Direction::East, vx, vy);
+                        distance = ((self.y - vy).abs(), (self.x - vx).abs());
+                        if self.x >= vx
+                            && (self.y - vy).abs() >= (self.x - vx).abs()
+                            && vy <= self.y
+                        {
                             any_collision = true;
-                            
                         }
                         // if self.y - self.x == self.x - vx {
                         //     egale = true;
                         // }
                     }
-                    if dir == Direction::West && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                    if dir == Direction::West
+                        && (turn == Turn::Forward
+                            || (turn == Turn::Left && self.turn == Turn::Left))
+                    {
                         direction_other = (Direction::West, vx, vy);
-                        
-                        distance = ((self.y - vy).abs(),  (vx - self.x).abs());
-                        if self.x - 70 <= vx  && (self.y - vy).abs() >= (vx - self.x).abs() && vy <= self.y {
-                            any_collision = true;
-                           
 
+                        distance = ((self.y - vy).abs(), (vx - self.x).abs());
+                        if self.x <= vx
+                            && (self.y - vy).abs() >= (vx - self.x).abs()
+                            && vy <= self.y
+                        {
+                            any_collision = true;
                         }
                         // if self.y - self.x == vx - self.x {
                         //     egale = true;
                         // }
                     }
-                
+
                     if egale {
                         any_collision = true;
                     }
                 }
 
                 Direction::South => {
-                    let  egale = false;
+                    let egale = false;
                     // println!("{} {} {} {:?}", self.y < vy, self.y , vy, self.direction);
-                    if dir == Direction::East && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                    if dir == Direction::East
+                        && (turn == Turn::Forward
+                            || (turn == Turn::Left && self.turn == Turn::Left))
+                    {
                         direction_other = (Direction::East, vx, vy);
-                        
-                        distance = ((self.y - vy).abs(),  (self.x - vx).abs());
-                        if self.y <= vy && (self.y - vy).abs() >= (self.x - vx).abs() && (vx <= self.x + 70) {
-                            println!("vu");
+
+                        distance = ((self.y - vy).abs(), (self.x - vx).abs());
+                        if self.y <= vy
+                            && (self.y - vy).abs() >= (self.x - vx).abs()
+                            && (vx <= self.x )
+                        {
                             any_collision = true;
-                            
-                            
                         }
                         // if self.y - self.x == self.x - vx {
                         //     egale = true;
                         // }
                     }
-                    if dir == Direction::West && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                    if dir == Direction::West
+                        && (turn == Turn::Forward
+                            || (turn == Turn::Left && self.turn == Turn::Left))
+                    {
                         direction_other = (Direction::West, vx, vy);
-                        
-                        distance = ((self.y - vy).abs(),  (vx - self.x).abs());
-                        if self.y <= vy && (self.y - vy).abs() >= (vx - self.x).abs() && (vx >= self.x - 70) {
-                            any_collision = true;
 
+                        distance = ((self.y - vy).abs(), (vx - self.x).abs());
+                        if self.y <= vy
+                            && (self.y - vy).abs() >= (vx - self.x).abs()
+                            && (vx >= self.x)
+                        {
+                            any_collision = true;
                         }
                         // if self.y - self.x == vx - self.x {
                         //     egale = true;
                         // }
                     }
-                
+
                     if egale {
                         any_collision = true;
                     }
                 }
 
                 Direction::East => {
-                   let  egale = false;
-                    if dir == Direction::North && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                    let egale = false;
+                    if dir == Direction::North
+                        && (turn == Turn::Forward
+                            || (turn == Turn::Left && self.turn == Turn::Left))
+                    {
                         // println!("{} {:?} {:?}", self.x > vx , self.direction, vehicle_data);
                         direction_other = (Direction::North, vx, vy);
-                        
-                        distance = ((vx - self.x).abs(),  ( vy - self.y).abs());
-                        if self.x <= vx && (vx - self.x).abs() >= ( vy - self.y).abs() && vy >= self.y - 70   {
-                            any_collision = true;
 
+                        distance = ((vx - self.x).abs(), (vy - self.y).abs());
+                        if self.x <= vx
+                            && (vx - self.x).abs() >= (vy - self.y).abs()
+                            && vy >= self.y
+                        {
+                            any_collision = true;
                         }
                         // if self.y - self.x == self.x - vx {
                         //     egale = true;
                         // }
                     }
-                    if dir == Direction::South && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                    if dir == Direction::South
+                        && (turn == Turn::Forward
+                            || (turn == Turn::Left && self.turn == Turn::Left))
+                    {
                         direction_other = (Direction::South, vx, vy);
-                       
-                        distance = ((vx - self.x).abs(),  ( vy - self.y).abs());
-                        if self.x <= vx && (vx - self.x).abs() >= ( vy - self.y).abs() && vy <= self.y + 70  {
-                            any_collision = true;
 
+                        distance = ((vx - self.x).abs(), (vy - self.y).abs());
+                        if self.x <= vx
+                            && (vx - self.x).abs() >= (vy - self.y).abs()
+                            && vy <= self.y
+                        {
+                            any_collision = true;
                         }
                         // if self.y - self.x == vx - self.x {
                         //     egale = true;
                         // }
                     }
-                
+
                     if egale {
                         any_collision = true;
                     }
                 }
 
                 Direction::West => {
-                    let  egale = false;
-                    if dir == Direction::North && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                    let egale = false;
+                    if dir == Direction::North
+                        && (turn == Turn::Forward
+                            || (turn == Turn::Left && self.turn == Turn::Left))
+                    {
                         // println!("{} {:?} {:?}", self.x > vx , self.direction, vehicle_data);
                         direction_other = (Direction::North, vx, vy);
-                       
-                        distance = ((self.x - vx).abs(),  ( vy - self.y).abs());
-                        if self.x >= vx && (self.x - vx).abs() >= ( vy - self.y).abs() && vy >= self.y - 70 {
-                            any_collision = true;
 
+                        distance = ((self.x - vx).abs(), (vy - self.y).abs());
+                        if self.x >= vx
+                            && (self.x - vx).abs() >= (vy - self.y).abs()
+                            && vy >= self.y
+                        {
+                            any_collision = true;
                         }
                         // if self.y - self.x == self.x - vx {
                         //     egale = true;
                         // }
                     }
-                    if dir == Direction::South && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
+                    if dir == Direction::South
+                        && (turn == Turn::Forward
+                            || (turn == Turn::Left && self.turn == Turn::Left))
+                    {
                         direction_other = (Direction::South, vx, vy);
-                       
-                        distance = ((self.x - vx).abs(),  (vy - self.y).abs());
-                        if self.x >= vx && (self.x - vx).abs() >= (vy - self.y).abs() &&  vy <= self.y + 70 {
-                            any_collision = true;
 
+                        distance = ((self.x - vx).abs(), (vy - self.y).abs());
+                        if self.x >= vx
+                            && (self.x - vx).abs() >= (vy - self.y).abs()
+                            && vy <= self.y
+                        {
+                            any_collision = true;
                         }
                         // if self.y - self.x == vx - self.x {
                         //     egale = true;
                         // }
                     }
-                
+
                     if egale {
                         any_collision = true;
                     }
                 }
-                
-               
-                
 
-               _=>  continue
+                _ => continue,
             }
         }
-       ( any_collision, (self.direction, direction_other), distance)
+        (any_collision, (self.direction, direction_other), distance)
     }
-    
+
     pub fn get_random_direction() -> Direction {
         let mut rng = rand::thread_rng();
         match rng.gen_range(0..4) {
@@ -352,28 +399,26 @@ impl<'a> Vehicule<'a> {
     }
 
     pub fn update_position(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
-
-        
         self.velocity = (self.distance / self.time) as i32;
+        if self.check_safety_distance(vehicle_data){
+            self.velocity = 0
+        }
         match self.direction {
-            Direction::North =>self.y -= self.velocity, 
+            Direction::North => self.y -= self.velocity,
             Direction::South => self.y += self.velocity,
             Direction::East => self.x += self.velocity,
             Direction::West => self.x -= self.velocity,
         }
 
-        
-        
-
         if self.is_at_intersection_start() {
             if self.turn != Turn::Right {
-                let  countinus  = vehicle_data.iter().any(|&x|
-                    match self.get_priority(x.2, x.3) {
+                let countinus = vehicle_data
+                    .iter()
+                    .any(|&x| match self.get_priority(x.2, x.3) {
                         VehiclePriority::High => false,
                         VehiclePriority::Low => true,
                         VehiclePriority::Medium => true,
-                    }
-                );
+                    });
                 // println!("{} - {} - {:?}" ,countinus, self.collision(vehicle_data).0, vehicle_data);
                 // let mut stop = self.collision(vehicle_data).0;
                 // if self.collision(vehicle_data).0 {
@@ -386,7 +431,7 @@ impl<'a> Vehicule<'a> {
                 //                 Direction::East=>,
 
                 //             }
-                            
+
                 //         },
                 //         Direction::West=>,
                 //         Direction::North=>,
@@ -396,38 +441,57 @@ impl<'a> Vehicule<'a> {
                 // if  self.collision(vehicle_data).0{
                 //     self.velocity = 0;
                 // } else {
-                    // if self.collision(vehicle_data).2 .0 == self.collision(vehicle_data).2 .1 {
-                        
-                    //     match self.collision(vehicle_data).1 .0 {
-                    //         Direction::East => {
-                                   
-                    //                 match self.collision(vehicle_data).1 .1 .0{
-                    //                     Direction::North  => {
-                    //                         if self.collision(vehicle_data).1 .1 .2 >= self.y { self.velocity = 0}
-                    //                     },
-                    //                     Direction::South=> {  if self.collision(vehicle_data).1 .1 .2 <= self.y { self.velocity = 0}},
-                    //                     _=> self.velocity = 5,
-                    //                 }
-                                    
-                    //             },
-                              
-                    //             _=> self.velocity = 5,
-                    //             // Direction::South=>,
-                    //         }
-                    // }
+                // if self.collision(vehicle_data).2 .0 == self.collision(vehicle_data).2 .1 {
+
+                //     match self.collision(vehicle_data).1 .0 {
+                //         Direction::East => {
+
+                //                 match self.collision(vehicle_data).1 .1 .0{
+                //                     Direction::North  => {
+                //                         if self.collision(vehicle_data).1 .1 .2 >= self.y { self.velocity = 0}
+                //                     },
+                //                     Direction::South=> {  if self.collision(vehicle_data).1 .1 .2 <= self.y { self.velocity = 0}},
+                //                     _=> self.velocity = 5,
+                //                 }
+
+                //             },
+
+                //             _=> self.velocity = 5,
+                //             // Direction::South=>,
+                //         }
+                // }
                 //     self.velocity = 5
                 // }
 
+                if self.collision(vehicle_data).0 {
+                    self.time += 10;
+                    if self.collision(vehicle_data).2 .0 < 150 {
+                        self.time += 700;
+                    }
 
-                  if self.collision(vehicle_data).0{
-                        self.time += 10;
-                  } else {
+                    if self.velocity == 0 {
+                        match self.collision(vehicle_data).1 .0 {
+                            Direction::North | Direction::South => {
+                                match self.collision(vehicle_data).1 .1 .0 {
+                                    Direction::East => {
+                                        self.time = 140;
+                                    }
+                                    Direction::West => {
+                                        self.time = 140;
+                                    }
+                                    _ => self.time = 140,
+                                }
+                            }
+
+                            _ => self.velocity += 700,
+                            // Direction::South=>,
+                        }
+                    }
+                } else {
                     self.time = 140;
-                  }
+                }
             }
         }
-
-       
 
         let is_left = self.turn == Turn::Left;
         match self.direction {
