@@ -53,7 +53,7 @@ impl<'a> Vehicule<'a> {
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
         let mut rng = rand::thread_rng();
-        let lane = rng.gen_range(3..=3);
+        let lane = rng.gen_range(2..=3);
 
         let (x, y, angle) = match direction {
             Direction::North => match lane {
@@ -136,22 +136,25 @@ impl<'a> Vehicule<'a> {
 
     pub fn get_priority(&self, other_dir: Direction, other_turn: Turn) -> VehiclePriority {
         match (self.direction, self.turn, other_dir, other_turn) {
-            (Direction::North ,  _, Direction::West, Turn::Forward | Turn::Left) => VehiclePriority::Medium,
-             _ => VehiclePriority::Low,
+            (Direction::North ,  _, Direction::West, Turn::Forward | Turn::Left) => VehiclePriority::Low,
+            (Direction::West ,  _, Direction::South, Turn::Forward | Turn::Left) => VehiclePriority::Low,
+            (Direction::South ,  _, Direction::East, Turn::Forward | Turn::Left) => VehiclePriority::Low,
+            (Direction::East ,  _, Direction::North, Turn::Forward | Turn::Left) => VehiclePriority::Low,
+             _ => VehiclePriority::High,
         }
     }
 
     fn is_at_intersection_start(&self) -> bool {
         match self.direction {
-            Direction::North => self.y <= 480 && self.y > 170, // && self.x >= intersection_start_x && self.x <= intersection_end_x,
-            Direction::South => self.y >= 185 && self.y < 440, // && self.x >= intersection_start_x && self.x <= intersection_end_x,
-            Direction::East => self.x >= 185 && self.x < 440, // && self.y >= intersection_start_y && self.y <= intersection_end_y,
-            Direction::West => self.x <= 480 && self.x > 170, // && self.y >= intersection_start_y && self.y <= intersection_end_y,
+            Direction::North => self.y <= 480 && self.y > 170,
+            Direction::South => self.y >= 185 && self.y < 440,
+            Direction::East => self.x >= 185 && self.x < 440,
+            Direction::West => self.x <= 480 && self.x > 170,
         }
     }
 
     
-    fn check_safety_distance(&self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) -> bool {
+    pub fn check_safety_distance(&self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) -> bool {
         for &(other_x, other_y, other_dir, _) in vehicle_data {
             if self.direction == other_dir {
                 // Vérifie uniquement les véhicules dans la même direction
@@ -315,14 +318,15 @@ impl<'a> Vehicule<'a> {
 
         if self.is_at_intersection_start() {
             if self.turn != Turn::Right {
-                let  countinus  = vehicle_data.iter().any(|&x| 
+                let  countinus  = vehicle_data.iter().any(|&x|
                     match self.get_priority(x.2, x.3) {
                         VehiclePriority::High => false,
                         VehiclePriority::Low => true,
                         VehiclePriority::Medium => true,
                     }
                 );
-                println!("{} - {} - {:?}" ,countinus, self.collision(vehicle_data), vehicle_data);
+                
+                // println!("{} - {} - {:?}" ,countinus, self.collision(vehicle_data), vehicle_data);
                 if  countinus && self.collision(vehicle_data) {
                     self.velocity = 0;
                 } else {

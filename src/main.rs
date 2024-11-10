@@ -94,6 +94,19 @@ pub fn main() -> Result<(), String> {
                         )?);
                     }
                 }
+                Event::KeyDown {
+                    keycode: Some(Keycode::R),
+                    ..
+                } => {
+                    if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::R)  {
+                        vehicles.push(Vehicule::new(
+                            &sdl_context,
+                            &mut canvas,
+                            &texture_creator,
+                            Direction::East,
+                        )?);
+                    }
+                }
                 _ => {}
             }
         }
