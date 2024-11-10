@@ -4,6 +4,7 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::collections::HashMap;
 use smart_road::models::vehicules::Turn;
+use rand::Rng;
 
 const WIDTH: u32 = 700;
 const HEIGHT: u32 = 700;
@@ -99,12 +100,20 @@ pub fn main() -> Result<(), String> {
                     ..
                 } => {
                     if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::R)  {
-                        vehicles.push(Vehicule::new(
-                            &sdl_context,
-                            &mut canvas,
-                            &texture_creator,
-                            Direction::East,
-                        )?);
+                        let num_vehicles = rand::thread_rng().gen_range(1..=3); // Spawn 1-3 vehicles
+            
+                        for _ in 0..num_vehicles {
+                            let random_direction = Vehicule::get_random_direction();
+                            
+                            if let Ok(vehicle) = Vehicule::new(
+                                &sdl_context,
+                                &mut canvas,
+                                &texture_creator,
+                                random_direction,
+                            ) {
+                                vehicles.push(vehicle);
+                            }
+                        }
                     }
                 }
                 _ => {}

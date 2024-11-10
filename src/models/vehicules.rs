@@ -340,6 +340,15 @@ impl<'a> Vehicule<'a> {
        ( any_collision, (self.direction, direction_other), distance)
     }
     
+    pub fn get_random_direction() -> Direction {
+        let mut rng = rand::thread_rng();
+        match rng.gen_range(0..4) {
+            0 => Direction::North,
+            1 => Direction::South,
+            2 => Direction::East,
+            _ => Direction::West,
+        }
+    }
 
     pub fn update_position(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
         match self.direction {
@@ -411,6 +420,8 @@ impl<'a> Vehicule<'a> {
                   }
             }
         }
+
+       
 
         let is_left = self.turn == Turn::Left;
         match self.direction {
