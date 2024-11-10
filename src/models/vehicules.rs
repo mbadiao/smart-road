@@ -204,7 +204,7 @@ impl<'a> Vehicule<'a> {
                     if dir == Direction::East && (turn == Turn::Forward || (turn == Turn::Left && self.turn == Turn::Left)) {
                          direction_other = (Direction::East, vx, vy);
                          distance = ((self.y - vy).abs(),  (self.x - vx).abs());
-                        if self.x >= vx && (self.y - vy).abs() >= (self.x - vx).abs() && vy <= self.y {
+                        if self.x + 70 >= vx && (self.y - vy).abs() >= (self.x - vx).abs() && vy <= self.y {
                             any_collision = true;
                             
                         }
@@ -216,7 +216,7 @@ impl<'a> Vehicule<'a> {
                         direction_other = (Direction::West, vx, vy);
                         
                         distance = ((self.y - vy).abs(),  (vx - self.x).abs());
-                        if self.x <= vx && (self.y - vy).abs() >= (vx - self.x).abs() && vy <= self.y {
+                        if self.x - 70 <= vx  && (self.y - vy).abs() >= (vx - self.x).abs() && vy <= self.y {
                             any_collision = true;
                            
 
@@ -238,7 +238,7 @@ impl<'a> Vehicule<'a> {
                         direction_other = (Direction::East, vx, vy);
                         
                         distance = ((self.y - vy).abs(),  (self.x - vx).abs());
-                        if self.y <= vy && (self.y - vy).abs() >= (self.x - vx).abs() && (vx <= self.x) {
+                        if self.y <= vy && (self.y - vy).abs() >= (self.x - vx).abs() && (vx <= self.x + 70) {
                             println!("vu");
                             any_collision = true;
                             
@@ -252,7 +252,7 @@ impl<'a> Vehicule<'a> {
                         direction_other = (Direction::West, vx, vy);
                         
                         distance = ((self.y - vy).abs(),  (vx - self.x).abs());
-                        if self.y <= vy && (self.y - vy).abs() >= (vx - self.x).abs() && (vx >= self.x) {
+                        if self.y <= vy && (self.y - vy).abs() >= (vx - self.x).abs() && (vx >= self.x - 70) {
                             any_collision = true;
 
                         }
@@ -273,7 +273,7 @@ impl<'a> Vehicule<'a> {
                         direction_other = (Direction::North, vx, vy);
                         
                         distance = ((vx - self.x).abs(),  ( vy - self.y).abs());
-                        if self.x <= vx && (vx - self.x).abs() >= ( vy - self.y).abs() && vy >= self.y   {
+                        if self.x <= vx && (vx - self.x).abs() >= ( vy - self.y).abs() && vy >= self.y - 70   {
                             any_collision = true;
 
                         }
@@ -285,7 +285,7 @@ impl<'a> Vehicule<'a> {
                         direction_other = (Direction::South, vx, vy);
                        
                         distance = ((vx - self.x).abs(),  ( vy - self.y).abs());
-                        if self.x <= vx && (vx - self.x).abs() >= ( vy - self.y).abs() && vy <= self.y  {
+                        if self.x <= vx && (vx - self.x).abs() >= ( vy - self.y).abs() && vy <= self.y + 70  {
                             any_collision = true;
 
                         }
@@ -306,7 +306,7 @@ impl<'a> Vehicule<'a> {
                         direction_other = (Direction::North, vx, vy);
                        
                         distance = ((self.x - vx).abs(),  ( vy - self.y).abs());
-                        if self.x >= vx && (self.x - vx).abs() >= ( vy - self.y).abs() && vy >= self.y  {
+                        if self.x >= vx && (self.x - vx).abs() >= ( vy - self.y).abs() && vy >= self.y - 70 {
                             any_collision = true;
 
                         }
@@ -318,7 +318,7 @@ impl<'a> Vehicule<'a> {
                         direction_other = (Direction::South, vx, vy);
                        
                         distance = ((self.x - vx).abs(),  (vy - self.y).abs());
-                        if self.x >= vx && (self.x - vx).abs() >= (vy - self.y).abs() &&  vy <= self.y  {
+                        if self.x >= vx && (self.x - vx).abs() >= (vy - self.y).abs() &&  vy <= self.y + 70 {
                             any_collision = true;
 
                         }
@@ -353,16 +353,17 @@ impl<'a> Vehicule<'a> {
 
     pub fn update_position(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn)>) {
 
-        if self.check_safety_distance(vehicle_data) {
-            self.velocity = 0; 
-        }
-
+        
+        self.velocity = (self.distance / self.time) as i32;
         match self.direction {
             Direction::North =>self.y -= self.velocity, 
             Direction::South => self.y += self.velocity,
             Direction::East => self.x += self.velocity,
             Direction::West => self.x -= self.velocity,
         }
+
+        
+        
 
         if self.is_at_intersection_start() {
             if self.turn != Turn::Right {
