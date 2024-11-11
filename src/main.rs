@@ -119,9 +119,9 @@ pub fn main() -> Result<(), String> {
                 _ => {}
             }
         }
-        let vehicle_positions: Vec<(i32, i32, Direction, Turn)> = vehicles
+        let vehicle_positions: Vec<(i32, i32, Direction, Turn , bool)> = vehicles
             .iter()
-            .map(|v| (v.x, v.y, v.direction, v.turn))
+            .map(|v| (v.x, v.y, v.direction, v.turn, v.passed))
             .collect();
 
         for i in 0..vehicles.len() {
