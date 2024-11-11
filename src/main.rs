@@ -125,7 +125,7 @@ pub fn main() -> Result<(), String> {
             .collect();
 
         for i in 0..vehicles.len() {
-            vehicles[i].update_position(&vehicle_positions);
+            vehicles[i].update(&vehicle_positions);
             vehicles[i].render(&mut canvas)?;
         }
 

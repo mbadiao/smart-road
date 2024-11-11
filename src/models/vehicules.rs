@@ -342,138 +342,232 @@ impl<'a> Vehicule<'a> {
 
 
     
-    pub fn update_position(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn, bool)>) {
+    pub fn update(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn, bool)>) {
         if self.is_at_intersection_start() {
-            if self.turn != Turn::Right {
-                let countinus = vehicle_data
-                    .iter()
-                    .any(|&x| match self.get_priority(x.2, x.3) {
-                        VehiclePriority::High => false,
-                        VehiclePriority::Low => true,
-                        VehiclePriority::Medium => true,
-                    });
-                if self.collision(vehicle_data).0 {
-                    // self.time += 5;
-                    if self.velocity == 0 {
-                        match self.collision(vehicle_data).1 .0 {
-                            Direction::North | Direction::South => {
-                                match self.collision(vehicle_data).1 .1 .0 {
-                                    Direction::East | Direction::West => {
-                                        self.time = 140;
-                                    }
-                                    _ => self.time = 140,
+            if self.collision(vehicle_data).0 {
+                match self.turn {
+                    Turn::Left => self.time = 1000,
+                    Turn::Right => self.time = 140,
+                    Turn::Forward => match self.direction {
+                        Direction::East | Direction::West => {
+                            if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                                (dir == Direction::South || dir == Direction::North) && !has_turned
+                            }) {
+                                self.time = 1000;
+                            }
+                        }
+                        _ => self.time = 35,
+                    },
+                }
+            } else {
+                match self.turn {
+                    Turn::Left => self.time = 1000,  // Voie 2
+                    Turn::Right => self.time = 140,  // Voie 1
+                    Turn::Forward => self.time = 15, // Voie 3
+                }
+            }
+
+            println!(
+                "{} {}",
+                self.velocity == 0,
+                vehicle_data.iter().all(|&(vx, vy, dir, turn, has_turned)| {
+                    turn != Turn::Forward || (vx < 0 || vx > 700 || vy < 0 || vy > 700)
+                })
+            );
+            if self.velocity == 0
+                && vehicle_data.iter().all(|&(vx, vy, dir, turn, has_turned)| {
+                    turn != Turn::Forward || (vx < 0 || vx > 700 || vy < 0 || vy > 700)
+                })
+            {
+                let is_left = self.turn == Turn::Left;
+
+                match self.direction {
+                    Direction::North => {
+                        if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                            (dir == Direction::South) && !has_turned && turn != Turn::Forward
+                        }) {
+                            self.time = 1000;
+                        } else {
+                            self.time = 140;
+                        }
+                        match self.y {
+                            425 => {
+                                if !is_left {
+                                    self.execute_turn()
                                 }
                             }
-
-                            _ => self.time = 400,
-                            // Direction::South=>,
-                        }
-                    } else {
-                        if self.collision(vehicle_data).2 .0 < 200 {
-                            self.time = -900;
-                        } else {
-                            self.time = 300
+                            310 => {
+                                if is_left {
+                                    self.execute_turn();
+                                }
+                            }
+                            _ => (),
                         }
                     }
-                } else {
-                    self.time = 20;
+                    Direction::South => {
+                        self.time = 140;
+                        match self.y {
+                            230 => {
+                                if !is_left {
+                                    self.execute_turn()
+                                }
+                            }
+                            350 => {
+                                if is_left {
+                                    self.execute_turn();
+                                }
+                            }
+                            _ => (),
+                        }
+                    }
+                    Direction::East => {
+                        if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                            (dir == Direction::West) && !has_turned && turn != Turn::Forward
+                        }) {
+                            self.time = 1000;
+                        } else {
+                            self.time = 140;
+                        }
+                        match self.x {
+                            230 => {
+                                if !is_left {
+                                    self.execute_turn()
+                                }
+                            }
+                            350 => {
+                                if is_left {
+                                    self.execute_turn();
+                                }
+                            }
+                            _ => (),
+                        }
+                    }
+                    Direction::West => {
+                        if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                            (dir == Direction::North) && !has_turned && turn != Turn::Forward
+                        }) {
+                            self.time = 1000;
+                        } else {
+                            self.time = 140;
+                        }
+                        match self.x {
+                            425 => {
+                                if !is_left {
+                                    self.execute_turn()
+                                }
+                            }
+                            310 => {
+                                if is_left {
+                                    self.execute_turn();
+                                }
+                            }
+                            _ => (),
+                        }
+                    }
+                }
+                // self.time = 35
+            } else {
+                if self.turn == Turn::Right {
+                let is_left = self.turn == Turn::Left;
+
+                    match self.direction {
+                        Direction::North => {
+                            if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                                (dir == Direction::South) && !has_turned && turn != Turn::Forward
+                            }) {
+                                self.time = 1000;
+                            } else {
+                                self.time = 140;
+                            }
+                            match self.y {
+                                425 => {
+                                    if !is_left {
+                                        self.execute_turn()
+                                    }
+                                }
+                                310 => {
+                                    if is_left {
+                                        self.execute_turn();
+                                    }
+                                }
+                                _ => (),
+                            }
+                        }
+                        Direction::South => {
+                            self.time = 140;
+                            match self.y {
+                                230 => {
+                                    if !is_left {
+                                        self.execute_turn()
+                                    }
+                                }
+                                350 => {
+                                    if is_left {
+                                        self.execute_turn();
+                                    }
+                                }
+                                _ => (),
+                            }
+                        }
+                        Direction::East => {
+                            if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                                (dir == Direction::West) && !has_turned && turn != Turn::Forward
+                            }) {
+                                self.time = 1000;
+                            } else {
+                                self.time = 140;
+                            }
+                            match self.x {
+                                230 => {
+                                    if !is_left {
+                                        self.execute_turn()
+                                    }
+                                }
+                                350 => {
+                                    if is_left {
+                                        self.execute_turn();
+                                    }
+                                }
+                                _ => (),
+                            }
+                        }
+                        Direction::West => {
+                            if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                                (dir == Direction::North) && !has_turned && turn != Turn::Forward
+                            }) {
+                                self.time = 1000;
+                            } else {
+                                self.time = 140;
+                            }
+                            match self.x {
+                                425 => {
+                                    if !is_left {
+                                        self.execute_turn()
+                                    }
+                                }
+                                310 => {
+                                    if is_left {
+                                        self.execute_turn();
+                                    }
+                                }
+                                _ => (),
+                            }
+                        }
+                    }
                 }
             }
         }
 
-     
-            let is_left = self.turn == Turn::Left;
-            match self.direction {
-                Direction::North => match self.y {
-                    425 => {
-                        if !is_left {
-                            self.execute_turn()
-                        }
-                        else {
-                            // if  vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
-                            //     (dir == Direction::South) && !has_turned && turn != Turn::Forward
-                            // }) {
-                            //     self.time = -900;
-                            // }
-                        }
-                    }
-                    310 => {
-                        if is_left {
-                            self.execute_turn();
-                        }
-                    }
-                    _ => {},
-                },
-                
-                Direction::South => match self.y {
-                    230 => {
-                        if !is_left {
-                            self.execute_turn()
-                        }
-                    }
-                    350 => {
-                        if is_left {
-                            self.execute_turn()
-                        }
-                    }
-                    _ => {},
-                },
-                Direction::East => match self.x {
-                    230 => {
-                        if !is_left {
-                            self.execute_turn()
-                        } else {
-                            // if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
-                            //     (dir == Direction::West) && !has_turned && turn != Turn::Forward
-                            // }) {
-                            //     self.time = 1;
-                            // }
-                        }
-                    }
-                    
-                    350 => {
-                        if is_left {
-                            if is_left {
-                                self.execute_turn()
-                            }
-                        }
-                    
-                    }
-                    _ => {},
-                },
-                Direction::West => match self.x {
-                    425 => {
-                        if !is_left {
-                            self.execute_turn()
-                        }
-                         else {
-                            // if  vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
-                            //     (dir == Direction::South) && !has_turned && turn != Turn::Forward
-                            // }) {
-                            //     self.time += 700;
-                            // }
-                        }
-                    }
-                    310 => {
-                        if is_left {
-                            self.execute_turn()
-                        }
-                    }
-                    _ => {},
-                },
-            }
-            self.velocity = (self.distance / self.time) as i32;
-            if self.check_safety_distance(vehicle_data){
-                self.velocity = 0
-            }
-            match self.direction {
-                Direction::North => self.y -= self.velocity,
-                Direction::South => self.y += self.velocity,
-                Direction::East => self.x += self.velocity,
-                Direction::West => self.x -= self.velocity,
-            }
-        
-       
+        self.velocity = (self.distance / self.time) as i32;
+        if self.check_safety_distance(vehicle_data) {
+            self.velocity = 0
+        }
+        match self.direction {
+            Direction::North => self.y -= self.velocity,
+            Direction::South => self.y += self.velocity,
+            Direction::East => self.x += self.velocity,
+            Direction::West => self.x -= self.velocity,
+        }
     }
   
     pub fn execute_turn(&mut self) {
