@@ -54,7 +54,7 @@ impl<'a> Vehicule<'a> {
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
         let mut rng = rand::thread_rng();
-        let lane = rng.gen_range(2..=3);
+        let lane = rng.gen_range(1..=3);
 
         let (x, y, angle) = match direction {
             Direction::North => match lane {
@@ -391,11 +391,6 @@ impl<'a> Vehicule<'a> {
                             self.time = 140;
                         }
                         match self.y {
-                            425 => {
-                                if !is_left {
-                                    self.execute_turn()
-                                }
-                            }
                             310 => {
                                 if is_left {
                                     self.execute_turn();
@@ -407,11 +402,6 @@ impl<'a> Vehicule<'a> {
                     Direction::South => {
                         self.time = 140;
                         match self.y {
-                            230 => {
-                                if !is_left {
-                                    self.execute_turn()
-                                }
-                            }
                             350 => {
                                 if is_left {
                                     self.execute_turn();
@@ -429,11 +419,6 @@ impl<'a> Vehicule<'a> {
                             self.time = 140;
                         }
                         match self.x {
-                            230 => {
-                                if !is_left {
-                                    self.execute_turn()
-                                }
-                            }
                             350 => {
                                 if is_left {
                                     self.execute_turn();
@@ -451,11 +436,6 @@ impl<'a> Vehicule<'a> {
                             self.time = 140;
                         }
                         match self.x {
-                            425 => {
-                                if !is_left {
-                                    self.execute_turn()
-                                }
-                            }
                             310 => {
                                 if is_left {
                                     self.execute_turn();
@@ -472,22 +452,11 @@ impl<'a> Vehicule<'a> {
 
                     match self.direction {
                         Direction::North => {
-                            if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
-                                (dir == Direction::South) && !has_turned && turn != Turn::Forward
-                            }) {
-                                self.time = 1000;
-                            } else {
-                                self.time = 140;
-                            }
+                            self.time = 140;
                             match self.y {
                                 425 => {
                                     if !is_left {
                                         self.execute_turn()
-                                    }
-                                }
-                                310 => {
-                                    if is_left {
-                                        self.execute_turn();
                                     }
                                 }
                                 _ => (),
@@ -501,53 +470,26 @@ impl<'a> Vehicule<'a> {
                                         self.execute_turn()
                                     }
                                 }
-                                350 => {
-                                    if is_left {
-                                        self.execute_turn();
-                                    }
-                                }
                                 _ => (),
                             }
                         }
                         Direction::East => {
-                            if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
-                                (dir == Direction::West) && !has_turned && turn != Turn::Forward
-                            }) {
-                                self.time = 1000;
-                            } else {
-                                self.time = 140;
-                            }
+                            self.time = 140;
                             match self.x {
                                 230 => {
                                     if !is_left {
                                         self.execute_turn()
                                     }
                                 }
-                                350 => {
-                                    if is_left {
-                                        self.execute_turn();
-                                    }
-                                }
                                 _ => (),
                             }
                         }
                         Direction::West => {
-                            if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
-                                (dir == Direction::North) && !has_turned && turn != Turn::Forward
-                            }) {
-                                self.time = 1000;
-                            } else {
-                                self.time = 140;
-                            }
+                            self.time = 140;
                             match self.x {
                                 425 => {
                                     if !is_left {
                                         self.execute_turn()
-                                    }
-                                }
-                                310 => {
-                                    if is_left {
-                                        self.execute_turn();
                                     }
                                 }
                                 _ => (),
