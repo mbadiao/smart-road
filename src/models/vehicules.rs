@@ -54,7 +54,7 @@ impl<'a> Vehicule<'a> {
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
         let mut rng = rand::thread_rng();
-        let lane = rng.gen_range(2..=2);
+        let lane = rng.gen_range(2..=3);
 
         let (x, y, angle) = match direction {
             Direction::North => match lane {
@@ -230,7 +230,7 @@ impl<'a> Vehicule<'a> {
                         direction_other = (Direction::West, vx, vy);
 
                         distance = ((self.y - vy).abs(), (vx - self.x).abs());
-                        if self.x <= vx + 70  && (self.y - vy).abs() >= (vx - self.x).abs() && vy <= self.y
+                        if self.x <= vx + 140  && (self.y - vy).abs() >= (vx - self.x).abs() && vy <= self.y + 140
                         {
                             any_collision = true;
                         }
@@ -343,17 +343,6 @@ impl<'a> Vehicule<'a> {
 
     
     pub fn update_position(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn, bool)>) {
-        self.velocity = (self.distance / self.time) as i32;
-        if self.check_safety_distance(vehicle_data){
-            self.velocity = 0
-        }
-        match self.direction {
-            Direction::North => self.y -= self.velocity,
-            Direction::South => self.y += self.velocity,
-            Direction::East => self.x += self.velocity,
-            Direction::West => self.x -= self.velocity,
-        }
-
         if self.is_at_intersection_start() {
             if self.turn != Turn::Right {
                 let countinus = vehicle_data
@@ -363,7 +352,6 @@ impl<'a> Vehicule<'a> {
                         VehiclePriority::Low => true,
                         VehiclePriority::Medium => true,
                     });
-            
                 if self.collision(vehicle_data).0 {
                     // self.time += 5;
                     if self.velocity == 0 {
@@ -377,16 +365,18 @@ impl<'a> Vehicule<'a> {
                                 }
                             }
 
-                            _ => self.velocity += 700,
+                            _ => self.time = 400,
                             // Direction::South=>,
                         }
                     } else {
-                        if self.collision(vehicle_data).2 .0 < 150 {
-                            self.time += 700;
+                        if self.collision(vehicle_data).2 .0 < 200 {
+                            self.time = -900;
+                        } else {
+                            self.time = 300
                         }
                     }
                 } else {
-                    self.time = 140;
+                    self.time = 20;
                 }
             }
         }
@@ -403,7 +393,7 @@ impl<'a> Vehicule<'a> {
                             // if  vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
                             //     (dir == Direction::South) && !has_turned && turn != Turn::Forward
                             // }) {
-                            //     self.time += 700;
+                            //     self.time = -900;
                             // }
                         }
                     }
@@ -412,7 +402,7 @@ impl<'a> Vehicule<'a> {
                             self.execute_turn();
                         }
                     }
-                    _ => return,
+                    _ => {},
                 },
                 
                 Direction::South => match self.y {
@@ -426,7 +416,7 @@ impl<'a> Vehicule<'a> {
                             self.execute_turn()
                         }
                     }
-                    _ => return,
+                    _ => {},
                 },
                 Direction::East => match self.x {
                     230 => {
@@ -434,9 +424,9 @@ impl<'a> Vehicule<'a> {
                             self.execute_turn()
                         } else {
                             // if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
-                            //     (dir == Direction::North || dir == Direction::West) && !has_turned && turn != Turn::Forward
+                            //     (dir == Direction::West) && !has_turned && turn != Turn::Forward
                             // }) {
-                            //     self.time += 700;
+                            //     self.time = 1;
                             // }
                         }
                     }
@@ -449,7 +439,7 @@ impl<'a> Vehicule<'a> {
                         }
                     
                     }
-                    _ => return,
+                    _ => {},
                 },
                 Direction::West => match self.x {
                     425 => {
@@ -469,13 +459,23 @@ impl<'a> Vehicule<'a> {
                             self.execute_turn()
                         }
                     }
-                    _ => return,
+                    _ => {},
                 },
+            }
+            self.velocity = (self.distance / self.time) as i32;
+            if self.check_safety_distance(vehicle_data){
+                self.velocity = 0
+            }
+            match self.direction {
+                Direction::North => self.y -= self.velocity,
+                Direction::South => self.y += self.velocity,
+                Direction::East => self.x += self.velocity,
+                Direction::West => self.x -= self.velocity,
             }
         
        
     }
-
+  
     pub fn execute_turn(&mut self) {
         if self.turn != Turn::Forward {
             self.direction = match (self.direction.clone(), self.turn) {
