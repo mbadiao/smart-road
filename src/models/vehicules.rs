@@ -412,7 +412,7 @@ impl<'a> Vehicule<'a> {
                     }
                     Direction::East => {
                         if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
-                            (dir == Direction::West) && !has_turned && turn != Turn::Forward
+                            (dir == Direction::West || dir == Direction::South) && !has_turned && turn != Turn::Forward
                         }) {
                             self.time = 1000;
                         } else {
@@ -445,11 +445,9 @@ impl<'a> Vehicule<'a> {
                         }
                     }
                 }
-                // self.time = 35
             } else {
                 if self.turn == Turn::Right {
                 let is_left = self.turn == Turn::Left;
-
                     match self.direction {
                         Direction::North => {
                             self.time = 140;
@@ -499,7 +497,7 @@ impl<'a> Vehicule<'a> {
                 }
             }
         }
-
+        
         self.velocity = (self.distance / self.time) as i32;
         if self.check_safety_distance(vehicle_data) {
             self.velocity = 0
