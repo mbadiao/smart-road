@@ -43,7 +43,10 @@ impl<'a>  Path<'a> {
     
         // Rectangles noirs pour les zones bloquées au centre
         canvas.set_draw_color(Color::RGB(0, 0, 0));
+        
+        
         let _ = canvas.fill_rect(Rect::new(230, 230, 470 - 229, 470 - 229));
+        
         Path {
             vehicules: Vec::new(),
         }
