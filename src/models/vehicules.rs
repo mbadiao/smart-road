@@ -27,7 +27,6 @@ pub enum Turn {
     Right,
     Forward,
 }
-
 pub struct Vehicule<'a> {
     pub x: i32,
     pub y: i32,
@@ -49,12 +48,20 @@ impl<'a> Vehicule<'a> {
         _canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
         texture_creator: &'a TextureCreator<WindowContext>,
         direction: Direction,
+        vehicule_data: &[Vehicule]
     ) -> Result<Vehicule<'a>, String> {
         let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG)?;
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
 
         let mut rng = rand::thread_rng();
-        let lane = rng.gen_range(1..=3);
+        let mut lane = rng.gen_range(1..=3);
+
+        // println!("{}",is_in_bounds(vehicule_data));
+        // println!("{:?}",vehicule_data);
+        if is_in_bounds(vehicule_data) {
+            lane = 1;
+        }
+        // println!("{}", lane);
 
         let (x, y, angle) = match direction {
             Direction::North => match lane {
@@ -82,13 +89,23 @@ impl<'a> Vehicule<'a> {
                 _ => unreachable!(),
             },
         };
+
+        pub fn is_in_bounds(vehicle_data: &[Vehicule]) -> bool {
+            for vehicule in vehicle_data {
+                if vehicule.x > 230 && vehicule.x < 425 && vehicule.y > 230 && vehicule.y < 425 {
+                    return true
+                }
+            }
+            false
+        }
+       
         let turn = match lane {
             1 => Turn::Right,
             2 => Turn::Left,
             3 => Turn::Forward,
             _ => unreachable!(),
         };
-
+        
         Ok(Vehicule {
             x,
             y,
@@ -105,18 +122,35 @@ impl<'a> Vehicule<'a> {
         })
     }
     pub fn can_add_vehicle(
+        &mut self,
         last_key_press: &mut HashMap<Keycode, Instant>,
         keycode: Keycode,
+        vehicles: &[Vehicule],
     ) -> bool {
         let now = Instant::now();
+        
         if let Some(&last_time) = last_key_press.get(&keycode) {
             if now.duration_since(last_time) < VEHICLE_CREATION_COOLDOWN {
                 return false;
             }
         }
+        if self.check_safety_distance_car(vehicles) {
+            return false
+        }
+    
+        // let new_vehicle_position = self.get_position_for_new_vehicle(self.direction); // assuming west direction
+        for vehicle in vehicles {
+            // let vehicle_position = vehicle.get_position();
+            if vehicle.x > self.x - 40 && vehicle.x <= self.x {
+                return false;
+            }
+        }
+
+    
         last_key_press.insert(keycode, now);
         true
     }
+    
     pub fn render(
         &self,
         canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
@@ -165,7 +199,6 @@ impl<'a> Vehicule<'a> {
     pub fn check_safety_distance(&self, vehicle_data: &Vec<(i32, i32, Direction, Turn, bool)>) -> bool {
         for &(other_x, other_y, other_dir, _, _) in vehicle_data {
             if self.direction == other_dir {
-                // Vérifie uniquement les véhicules dans la même direction
                 match self.direction {
                     Direction::North => {
                         if self.x == other_x
@@ -205,6 +238,48 @@ impl<'a> Vehicule<'a> {
         false
     }
 
+    pub fn check_safety_distance_car(&self, vehicle_data: &[Vehicule]) -> bool {
+        for other_vehicle in vehicle_data {
+            if self.direction == other_vehicle.direction {
+                match self.direction {
+                    Direction::North => {
+                        if self.x == other_vehicle.x
+                            && self.y > other_vehicle.y
+                            && self.y - other_vehicle.y < 80
+                        {
+                            return true;
+                        }
+                    }
+                    Direction::South => {
+                        if self.x == other_vehicle.x
+                            && self.y < other_vehicle.y
+                            && other_vehicle.y - self.y < 80
+                        {
+                            return true;
+                        }
+                    }
+                    Direction::East => {
+                        if self.y == other_vehicle.y
+                            && self.x < other_vehicle.x
+                            && other_vehicle.x - self.x < 80
+                        {
+                            return true;
+                        }
+                    }
+                    Direction::West => {
+                        if self.y == other_vehicle.y
+                            && self.x > other_vehicle.x
+                            && self.x - other_vehicle.x < 80
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        false
+    }
+    
     fn collision(
         &self,
         vehicle_data: &Vec<(i32, i32, Direction, Turn, bool)>,
@@ -329,6 +404,8 @@ impl<'a> Vehicule<'a> {
         (any_collision, (self.direction, direction_other), distance)
     }
 
+
+
     pub fn get_random_direction() -> Direction {
         let mut rng = rand::thread_rng();
         match rng.gen_range(0..4) {
@@ -339,7 +416,8 @@ impl<'a> Vehicule<'a> {
         }
     }
 
-
+    
+   
 
     
     pub fn update(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn, bool)>) {
@@ -350,7 +428,7 @@ impl<'a> Vehicule<'a> {
                     Turn::Right => self.time = 140,
                     Turn::Forward => match self.direction {
                         Direction::East | Direction::West => {
-                            if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                            if vehicle_data.iter().any(|&(_vx, _vy, dir, _turn, has_turned)| {
                                 (dir == Direction::South || dir == Direction::North) && !has_turned
                             }) {
                                 self.time = 1000;
@@ -367,21 +445,17 @@ impl<'a> Vehicule<'a> {
                 }
             }
 
-            println!(
-                "{} {}",
-                self.velocity == 0,
-                vehicle_data.iter().all(|&(vx, vy, dir, turn, has_turned)| {
-                    turn != Turn::Forward || (vx < 0 || vx > 700 || vy < 0 || vy > 700)
-                })
-            );
+          
             if self.velocity == 0
                 && vehicle_data.iter().all(|&(vx, vy, dir, turn, has_turned)| {
                     turn != Turn::Forward || (vx < 0 || vx > 700 || vy < 0 || vy > 700)
                 })
+
             {
                 let is_left = self.turn == Turn::Left;
 
                 match self.direction {
+
                     Direction::North => {
                         if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
                             (dir == Direction::South) && !has_turned && turn != Turn::Forward
@@ -402,7 +476,7 @@ impl<'a> Vehicule<'a> {
                     Direction::South => {
                         self.time = 140;
                         match self.y {
-                            350 => {
+                            300..=350 => {
                                 if is_left {
                                     self.execute_turn();
                                 }
@@ -411,6 +485,7 @@ impl<'a> Vehicule<'a> {
                         }
                     }
                     Direction::East => {
+
                         if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
                             (dir == Direction::West || dir == Direction::South) && !has_turned && turn != Turn::Forward
                         }) {
@@ -419,7 +494,7 @@ impl<'a> Vehicule<'a> {
                             self.time = 140;
                         }
                         match self.x {
-                            350 => {
+                            350  => {
                                 if is_left {
                                     self.execute_turn();
                                 }
@@ -428,6 +503,7 @@ impl<'a> Vehicule<'a> {
                         }
                     }
                     Direction::West => {
+
                         if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
                             (dir == Direction::North) && !has_turned && turn != Turn::Forward
                         }) {

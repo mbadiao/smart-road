@@ -47,60 +47,77 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Up),
                     ..
                 } => {
-                    if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::Up) {
-                        vehicles.push(Vehicule::new(
-                            &sdl_context,
-                            &mut canvas,
-                            &texture_creator,
-                            Direction::North,
-                        )?);
+                    let mut vehicle = Vehicule::new(
+                        &sdl_context,
+                        &mut canvas,
+                        &texture_creator,
+                        Direction::North,
+                        &vehicles
+                    )?;
+                    if vehicle.can_add_vehicle(&mut last_key_press, Keycode::Up, &vehicles) {
+                        vehicles.push(vehicle);
                     }
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Down),
                     ..
                 } => {
-                    if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::Down) {
-                        vehicles.push(Vehicule::new(
-                            &sdl_context,
-                            &mut canvas,
-                            &texture_creator,
-                            Direction::South,
-                        )?);
+                    let mut vehicle = Vehicule::new(
+                        &sdl_context,
+                        &mut canvas,
+                        &texture_creator,
+                        Direction::South,
+                        &vehicles
+                    )?;
+                    if vehicle.can_add_vehicle(&mut last_key_press, Keycode::Down, &vehicles) {
+                        vehicles.push(vehicle);
                     }
+                    
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Left),
                     ..
                 } => {
-                    if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::Left) {
-                        vehicles.push(Vehicule::new(
-                            &sdl_context,
-                            &mut canvas,
-                            &texture_creator,
-                            Direction::West,
-                        )?);
+                    let mut vehicle = Vehicule::new(
+                        &sdl_context,
+                        &mut canvas,
+                        &texture_creator,
+                        Direction::West,
+                        &vehicles
+                    )?;
+                    if vehicle.can_add_vehicle(&mut last_key_press, Keycode::Left, &vehicles) {
+                        vehicles.push(vehicle);
                     }
                 }
+                
                 Event::KeyDown {
                     keycode: Some(Keycode::Right),
                     ..
                 } => {
-                    if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::Right) {
-                        vehicles.push(Vehicule::new(
-                            &sdl_context,
-                            &mut canvas,
-                            &texture_creator,
-                            Direction::East,
-                        )?);
+                    let mut vehicle = Vehicule::new(
+                        &sdl_context,
+                        &mut canvas,
+                        &texture_creator,
+                        Direction::East,
+                        &vehicles
+                    )?;
+                    if vehicle.can_add_vehicle(&mut last_key_press, Keycode::Right, &vehicles) {
+                        vehicles.push(vehicle);
                     }
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::R),
                     ..
                 } => {
-                    if Vehicule::can_add_vehicle(&mut last_key_press, Keycode::R)  {
-                        let num_vehicles = rand::thread_rng().gen_range(1..=3); // Spawn 1-3 vehicles
+                    let mut vehicle = Vehicule::new(
+                        &sdl_context,
+                        &mut canvas,
+                        &texture_creator,
+                        Direction::East,
+                        &vehicles
+                    )?;
+                    if vehicle.can_add_vehicle(&mut last_key_press, Keycode::R, &vehicles) {
+                        let num_vehicles = rand::thread_rng().gen_range(1..=3); 
             
                         for _ in 0..num_vehicles {
                             let random_direction = Vehicule::get_random_direction();
@@ -110,6 +127,7 @@ pub fn main() -> Result<(), String> {
                                 &mut canvas,
                                 &texture_creator,
                                 random_direction,
+                                &vehicles
                             ) {
                                 vehicles.push(vehicle);
                             }
