@@ -1,3 +1,3 @@
 pub mod path;
-pub mod vas;
+pub mod statistics;
 pub mod vehicules;

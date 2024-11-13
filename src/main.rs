@@ -1,4 +1,4 @@
-use smart_road::models::{path, vehicules::Vehicule, vehicules::Direction};
+use smart_road::models::{path, vehicules::Vehicule, vehicules::Direction, statistics::Statistics};
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -28,9 +28,14 @@ pub fn main() -> Result<(), String> {
 
     let mut vehicles = Vec::new();
     let mut last_key_press = HashMap::new();
-
+    let mut should_quit = false;
+    let mut statistics = Statistics::new();
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
+        if should_quit {
+            break 'running;
+        }
+
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
 
@@ -38,11 +43,19 @@ pub fn main() -> Result<(), String> {
 
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
+                Event::Quit { .. } => {
+                    should_quit = true;
+                }
+                Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
-                } => break 'running,
+                } => {
+                    if statistics.show_statistics {
+                        should_quit = true;
+                    } else {
+                        statistics.toggle_statistics_display(&mut canvas);
+                    }
+                }
                 Event::KeyDown {
                     keycode: Some(Keycode::Up),
                     ..
@@ -146,7 +159,9 @@ pub fn main() -> Result<(), String> {
             vehicles[i].update(&vehicle_positions);
             vehicles[i].render(&mut canvas)?;
         }
-
+        if statistics.show_statistics {
+            statistics.display(&mut canvas);
+        }
         canvas.present();
         std::thread::sleep(std::time::Duration::from_millis(100));
     }

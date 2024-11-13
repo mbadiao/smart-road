@@ -6,6 +6,8 @@ use sdl2::video::WindowContext;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
+use crate::models::statistics::Statistics;
+
 pub enum VehiclePriority {
     High,
     Medium,
@@ -48,7 +50,7 @@ impl<'a> Vehicule<'a> {
         _canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
         texture_creator: &'a TextureCreator<WindowContext>,
         direction: Direction,
-        vehicule_data: &[Vehicule]
+        vehicule_data: &[Vehicule],
     ) -> Result<Vehicule<'a>, String> {
         let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG)?;
         let texture = texture_creator.load_texture("./assets/vehicles.png")?;
@@ -105,7 +107,8 @@ impl<'a> Vehicule<'a> {
             3 => Turn::Forward,
             _ => unreachable!(),
         };
-        
+        let mut max_vehicle = Statistics::new();
+        max_vehicle.increment();
         Ok(Vehicule {
             x,
             y,
