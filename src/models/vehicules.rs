@@ -41,7 +41,8 @@ pub struct Vehicule<'a> {
     pub time: i32,
     pub velocity: i32,
     pub distance: i32,
-    pub passed : bool
+    pub passed : bool,
+    pub passed_inter: bool
 }
 
 impl<'a> Vehicule<'a> {
@@ -121,7 +122,8 @@ impl<'a> Vehicule<'a> {
             time: 140,
             distance: 700,
             velocity: 5,
-            passed : false
+            passed : false,
+            passed_inter: false,
         })
     }
     pub fn can_add_vehicle(
@@ -196,6 +198,16 @@ impl<'a> Vehicule<'a> {
             Direction::South => self.y >= 185 && self.y < 440,
             Direction::East => self.x >= 185 && self.x < 440,
             Direction::West => self.x <= 480 && self.x > 170,
+        }
+    }
+    
+    fn if_pass_intersection(&self) -> bool {
+
+        match self.direction {
+            Direction::North => self.y <= 230,
+            Direction::South => self.y >= 470,
+            Direction::East => self.x >= 470,
+            Direction::West => self.x <= 230, 
         }
     }
 
@@ -423,7 +435,7 @@ impl<'a> Vehicule<'a> {
    
 
     
-    pub fn update(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn, bool)>) {
+    pub fn update(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn, bool)>,stat: &mut Statistics) {
         if self.is_at_intersection_start() {
             if self.collision(vehicle_data).0 {
                 match self.turn {
@@ -450,7 +462,7 @@ impl<'a> Vehicule<'a> {
 
           
             if self.velocity == 0
-                && vehicle_data.iter().all(|&(vx, vy, dir, turn, has_turned)| {
+                && vehicle_data.iter().all(|&(vx, vy, _dir, turn, _has_turned)| {
                     turn != Turn::Forward || (vx < 0 || vx > 700 || vy < 0 || vy > 700)
                 })
 
@@ -460,7 +472,7 @@ impl<'a> Vehicule<'a> {
                 match self.direction {
 
                     Direction::North => {
-                        if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                        if vehicle_data.iter().any(|&(_vx, _vy, dir, turn, has_turned)| {
                             (dir == Direction::South) && !has_turned && turn != Turn::Forward
                         }) {
                             self.time = 1000;
@@ -489,7 +501,7 @@ impl<'a> Vehicule<'a> {
                     }
                     Direction::East => {
 
-                        if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                        if vehicle_data.iter().any(|&(_vx, _vy, dir, turn, has_turned)| {
                             (dir == Direction::West || dir == Direction::South) && !has_turned && turn != Turn::Forward
                         }) {
                             self.time = 1000;
@@ -507,7 +519,7 @@ impl<'a> Vehicule<'a> {
                     }
                     Direction::West => {
 
-                        if vehicle_data.iter().any(|&(vx, vy, dir, turn, has_turned)| {
+                        if vehicle_data.iter().any(|&(_vx, _vy, dir, turn, has_turned)| {
                             (dir == Direction::North) && !has_turned && turn != Turn::Forward
                         }) {
                             self.time = 1000;
@@ -587,6 +599,11 @@ impl<'a> Vehicule<'a> {
             Direction::East => self.x += self.velocity,
             Direction::West => self.x -= self.velocity,
         }
+
+        if self.if_pass_intersection() {
+            self.passed_inter = true;
+        }
+
     }
   
     pub fn execute_turn(&mut self) {

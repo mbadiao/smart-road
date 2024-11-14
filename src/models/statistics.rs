@@ -6,6 +6,8 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+
+use super::vehicules::Vehicule;
 // use sdl2::ttf::Font;
 
 #[derive(Debug)]
@@ -50,8 +52,7 @@ impl Statistics {
         canvas.copy(&texture, None, Some(rect)).unwrap();
         // canvas.present();
     }
-
-   
+    
     pub fn toggle_statistics_display(&mut self, canvas: &mut Canvas<Window>) {
         self.show_statistics = !self.show_statistics;
         if self.show_statistics {
@@ -59,10 +60,16 @@ impl Statistics {
         }
     }
 
-    pub fn increment(&mut self) {
-        self.number_of_vehicles +=1 ;
-        // println!("{}",self.number_of_vehicles);
+    pub fn increment(&mut self, vehicle: &[Vehicule]) {
+        self.number_of_vehicles = vehicle.iter().filter(|v| v.passed_inter == true).collect::<Vec<&Vehicule>>().len() as i32;
     }
 
+    pub fn max_velocity(&mut self, vehicle: &[Vehicule]) {
+        self.max_velocity = vehicle.iter().map(|f| f.velocity).fold(i32::MIN, |max, velocity| max.max(velocity));
+    }
+
+    pub fn min_velocity(&mut self, vehicle: &[Vehicule]) {
+        self.max_velocity = vehicle.iter().map(|f| f.velocity).fold(i32::MIN, |max, velocity| max.min(velocity));
+    }
 
 }

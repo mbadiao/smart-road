@@ -31,6 +31,7 @@ pub fn main() -> Result<(), String> {
     let mut should_quit = false;
     let mut statistics = Statistics::new();
     let mut event_pump = sdl_context.event_pump()?;
+
     'running: loop {
         if should_quit {
             break 'running;
@@ -156,9 +157,12 @@ pub fn main() -> Result<(), String> {
             .collect();
 
         for i in 0..vehicles.len() {
-            vehicles[i].update(&vehicle_positions);
+            vehicles[i].update(&vehicle_positions,&mut statistics);
             vehicles[i].render(&mut canvas)?;
         }
+        statistics.increment(&vehicles);
+        statistics.max_velocity(&vehicles);
+        statistics.min_velocity(&vehicles);
         if statistics.show_statistics {
             statistics.display(&mut canvas);
         }
