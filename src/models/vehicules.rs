@@ -1,3 +1,4 @@
+
 use rand::Rng;
 use sdl2::image::{InitFlag, LoadTexture};
 use sdl2::keyboard::Keycode;
@@ -108,8 +109,7 @@ impl<'a> Vehicule<'a> {
             3 => Turn::Forward,
             _ => unreachable!(),
         };
-        let mut max_vehicle = Statistics::new();
-        max_vehicle.increment();
+        
         Ok(Vehicule {
             x,
             y,
