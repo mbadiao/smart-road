@@ -477,10 +477,10 @@ impl<'a> Vehicule<'a> {
                         }) {
                             self.time = 1000;
                         } else {
-                            self.time = 140;
+                            self.time = 35;
                         }
                         match self.y {
-                            310 => {
+                            290..=310 => {
                                 if is_left {
                                     self.execute_turn();
                                 }
@@ -489,9 +489,9 @@ impl<'a> Vehicule<'a> {
                         }
                     }
                     Direction::South => {
-                        self.time = 140;
+                        self.time = 35;
                         match self.y {
-                            300..=350 => {
+                            340..=350 => {
                                 if is_left {
                                     self.execute_turn();
                                 }
@@ -506,10 +506,10 @@ impl<'a> Vehicule<'a> {
                         }) {
                             self.time = 1000;
                         } else {
-                            self.time = 140;
+                            self.time = 35;
                         }
                         match self.x {
-                            350  => {
+                            340..=350  => {
                                 if is_left {
                                     self.execute_turn();
                                 }
@@ -524,10 +524,10 @@ impl<'a> Vehicule<'a> {
                         }) {
                             self.time = 1000;
                         } else {
-                            self.time = 140;
+                            self.time = 35;
                         }
                         match self.x {
-                            310 => {
+                            290..=310 => {
                                 if is_left {
                                     self.execute_turn();
                                 }
