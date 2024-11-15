@@ -1,10 +1,10 @@
-use smart_road::models::{path, vehicules::Vehicule, vehicules::Direction, statistics::Statistics};
-use sdl2::pixels::Color;
+use rand::Rng;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use std::collections::HashMap;
+use sdl2::pixels::Color;
 use smart_road::models::vehicules::Turn;
-use rand::Rng;
+use smart_road::models::{path, statistics::Statistics, vehicules::Direction, vehicules::Vehicule};
+use std::collections::HashMap;
 
 const WIDTH: u32 = 700;
 const HEIGHT: u32 = 700;
@@ -66,7 +66,7 @@ pub fn main() -> Result<(), String> {
                         &mut canvas,
                         &texture_creator,
                         Direction::North,
-                        &vehicles
+                        &vehicles,
                     )?;
                     if vehicle.can_add_vehicle(&mut last_key_press, Keycode::Up, &vehicles) {
                         vehicles.push(vehicle);
@@ -81,12 +81,12 @@ pub fn main() -> Result<(), String> {
                         &mut canvas,
                         &texture_creator,
                         Direction::South,
-                        &vehicles
+                        &vehicles,
                     )?;
+
                     if vehicle.can_add_vehicle(&mut last_key_press, Keycode::Down, &vehicles) {
                         vehicles.push(vehicle);
                     }
-                    
                 }
                 Event::KeyDown {
                     keycode: Some(Keycode::Left),
@@ -97,13 +97,13 @@ pub fn main() -> Result<(), String> {
                         &mut canvas,
                         &texture_creator,
                         Direction::West,
-                        &vehicles
+                        &vehicles,
                     )?;
                     if vehicle.can_add_vehicle(&mut last_key_press, Keycode::Left, &vehicles) {
                         vehicles.push(vehicle);
                     }
                 }
-                
+
                 Event::KeyDown {
                     keycode: Some(Keycode::Right),
                     ..
@@ -113,7 +113,7 @@ pub fn main() -> Result<(), String> {
                         &mut canvas,
                         &texture_creator,
                         Direction::East,
-                        &vehicles
+                        &vehicles,
                     )?;
                     if vehicle.can_add_vehicle(&mut last_key_press, Keycode::Right, &vehicles) {
                         vehicles.push(vehicle);
@@ -128,20 +128,20 @@ pub fn main() -> Result<(), String> {
                         &mut canvas,
                         &texture_creator,
                         Direction::East,
-                        &vehicles
+                        &vehicles,
                     )?;
                     if vehicle.can_add_vehicle(&mut last_key_press, Keycode::R, &vehicles) {
-                        let num_vehicles = rand::thread_rng().gen_range(1..=3); 
-            
+                        let num_vehicles = rand::thread_rng().gen_range(1..=3);
+
                         for _ in 0..num_vehicles {
                             let random_direction = Vehicule::get_random_direction();
-                            
+
                             if let Ok(vehicle) = Vehicule::new(
                                 &sdl_context,
                                 &mut canvas,
                                 &texture_creator,
                                 random_direction,
-                                &vehicles
+                                &vehicles,
                             ) {
                                 vehicles.push(vehicle);
                             }
@@ -151,20 +151,21 @@ pub fn main() -> Result<(), String> {
                 _ => {}
             }
         }
-        let vehicle_positions: Vec<(i32, i32, Direction, Turn , bool)> = vehicles
+        let vehicle_positions: Vec<(i32, i32, Direction, Turn, bool)> = vehicles
             .iter()
             .map(|v| (v.x, v.y, v.direction, v.turn, v.passed))
             .collect();
 
         for i in 0..vehicles.len() {
-            vehicles[i].update(&vehicle_positions,&mut statistics);
+            vehicles[i].update(&vehicle_positions, &mut statistics);
             vehicles[i].render(&mut canvas)?;
         }
-        statistics.increment(&vehicles);
         statistics.max_velocity(&vehicles);
-        statistics.min_velocity(&vehicles);
+        statistics.min_velocity(&mut vehicles);
+        statistics.increment(&vehicles);
+        statistics.get_time(&mut vehicles);
         if statistics.show_statistics {
-            statistics.display(&mut canvas);
+            _ = statistics.display(&mut canvas);
         }
         canvas.present();
         std::thread::sleep(std::time::Duration::from_millis(100));

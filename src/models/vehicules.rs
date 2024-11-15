@@ -43,7 +43,9 @@ pub struct Vehicule<'a> {
     pub velocity: i32,
     pub distance: i32,
     pub passed : bool,
-    pub passed_inter: bool
+    pub duration: Instant,
+    pub passed_inter: bool,
+    pub time_recorded: bool,
 }
 
 impl<'a> Vehicule<'a> {
@@ -60,12 +62,9 @@ impl<'a> Vehicule<'a> {
         let mut rng = rand::thread_rng();
         let mut lane = rng.gen_range(1..=3);
 
-        // println!("{}",is_in_bounds(vehicule_data));
-        // println!("{:?}",vehicule_data);
         if is_in_bounds(vehicule_data) {
             lane = 1;
         }
-        // println!("{}", lane);
 
         let (x, y, angle) = match direction {
             Direction::North => match lane {
@@ -109,7 +108,7 @@ impl<'a> Vehicule<'a> {
             3 => Turn::Forward,
             _ => unreachable!(),
         };
-        
+
         Ok(Vehicule {
             x,
             y,
@@ -123,7 +122,9 @@ impl<'a> Vehicule<'a> {
             distance: 700,
             velocity: 5,
             passed : false,
+            duration: Instant::now(),
             passed_inter: false,
+            time_recorded: false,
         })
     }
     pub fn can_add_vehicle(
@@ -133,7 +134,6 @@ impl<'a> Vehicule<'a> {
         vehicles: &[Vehicule],
     ) -> bool {
         let now = Instant::now();
-        
         if let Some(&last_time) = last_key_press.get(&keycode) {
             if now.duration_since(last_time) < VEHICLE_CREATION_COOLDOWN {
                 return false;
@@ -142,16 +142,7 @@ impl<'a> Vehicule<'a> {
         if self.check_safety_distance_car(vehicles) {
             return false
         }
-    
-        // let new_vehicle_position = self.get_position_for_new_vehicle(self.direction); // assuming west direction
-        for vehicle in vehicles {
-            // let vehicle_position = vehicle.get_position();
-            if vehicle.x > self.x - 40 && vehicle.x <= self.x {
-                return false;
-            }
-        }
 
-    
         last_key_press.insert(keycode, now);
         true
     }
@@ -431,10 +422,6 @@ impl<'a> Vehicule<'a> {
         }
     }
 
-    
-   
-
-    
     pub fn update(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn, bool)>,stat: &mut Statistics) {
         if self.is_at_intersection_start() {
             if self.collision(vehicle_data).0 {
@@ -477,7 +464,7 @@ impl<'a> Vehicule<'a> {
                         }) {
                             self.time = 1000;
                         } else {
-                            self.time = 35;
+                            self.time = 15;
                         }
                         match self.y {
                             290..=310 => {
@@ -502,7 +489,7 @@ impl<'a> Vehicule<'a> {
                     Direction::East => {
 
                         if vehicle_data.iter().any(|&(_vx, _vy, dir, turn, has_turned)| {
-                            (dir == Direction::West || dir == Direction::South) && !has_turned && turn != Turn::Forward
+                            (dir == Direction::West || dir == Direction::South ||dir == Direction::North ) && !has_turned && turn != Turn::Forward
                         }) {
                             self.time = 1000;
                         } else {
