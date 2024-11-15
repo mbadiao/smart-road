@@ -507,7 +507,7 @@ impl<'a> Vehicule<'a> {
                     Direction::West => {
 
                         if vehicle_data.iter().any(|&(_vx, _vy, dir, turn, has_turned)| {
-                            (dir == Direction::North) && !has_turned && turn != Turn::Forward
+                            (dir == Direction::North || dir == Direction::South) && !has_turned && turn != Turn::Forward
                         }) {
                             self.time = 1000;
                         } else {
