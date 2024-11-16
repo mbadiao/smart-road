@@ -127,6 +127,7 @@ impl<'a> Vehicule<'a> {
             time_recorded: false,
         })
     }
+
     pub fn can_add_vehicle(
         &mut self,
         last_key_press: &mut HashMap<Keycode, Instant>,
@@ -139,10 +140,11 @@ impl<'a> Vehicule<'a> {
                 return false;
             }
         }
+        
         if self.check_safety_distance_car(vehicles) {
             return false
         }
-
+        
         last_key_press.insert(keycode, now);
         true
     }
@@ -187,7 +189,7 @@ impl<'a> Vehicule<'a> {
         match self.direction {
             Direction::North => self.y <= 480 && self.y > 170,
             Direction::South => self.y >= 185 && self.y < 440,
-            Direction::East => self.x >= 185 && self.x < 440,
+            Direction::East => self.x >= 175 && self.x < 440,
             Direction::West => self.x <= 480 && self.x > 170,
         }
     }
@@ -424,6 +426,7 @@ impl<'a> Vehicule<'a> {
 
     pub fn update(&mut self, vehicle_data: &Vec<(i32, i32, Direction, Turn, bool)>,stat: &mut Statistics) {
         if self.is_at_intersection_start() {
+        // println!("{}",self.x);
             if self.collision(vehicle_data).0 {
                 match self.turn {
                     Turn::Left => self.time = 1000,

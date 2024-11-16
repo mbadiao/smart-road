@@ -31,6 +31,7 @@ pub fn main() -> Result<(), String> {
     let mut should_quit = false;
     let mut statistics = Statistics::new();
     let mut event_pump = sdl_context.event_pump()?;
+    let mut is_creating_random_vehicles = false;
 
     'running: loop {
         if should_quit {
@@ -61,6 +62,9 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Up),
                     ..
                 } => {
+                    if is_creating_random_vehicles {
+                        continue;
+                    }
                     let mut vehicle = Vehicule::new(
                         &sdl_context,
                         &mut canvas,
@@ -76,6 +80,9 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Down),
                     ..
                 } => {
+                    if is_creating_random_vehicles {
+                        continue;
+                    }
                     let mut vehicle = Vehicule::new(
                         &sdl_context,
                         &mut canvas,
@@ -92,6 +99,9 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Left),
                     ..
                 } => {
+                    if is_creating_random_vehicles {
+                        continue;
+                    }
                     let mut vehicle = Vehicule::new(
                         &sdl_context,
                         &mut canvas,
@@ -108,6 +118,9 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Right),
                     ..
                 } => {
+                    if is_creating_random_vehicles {
+                        continue;
+                    }
                     let mut vehicle = Vehicule::new(
                         &sdl_context,
                         &mut canvas,
@@ -123,30 +136,26 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::R),
                     ..
                 } => {
-                    let mut vehicle = Vehicule::new(
-                        &sdl_context,
-                        &mut canvas,
-                        &texture_creator,
-                        Direction::East,
-                        &vehicles,
-                    )?;
-                    if vehicle.can_add_vehicle(&mut last_key_press, Keycode::R, &vehicles) {
-                        let num_vehicles = rand::thread_rng().gen_range(1..=3);
+                    is_creating_random_vehicles = true;
 
-                        for _ in 0..num_vehicles {
-                            let random_direction = Vehicule::get_random_direction();
+                    let num_vehicles = rand::thread_rng().gen_range(1..=3);
+                    for _ in 0..num_vehicles {
+                        let random_direction = Vehicule::get_random_direction();
 
-                            if let Ok(vehicle) = Vehicule::new(
-                                &sdl_context,
-                                &mut canvas,
-                                &texture_creator,
-                                random_direction,
-                                &vehicles,
-                            ) {
+                        if let Ok(mut vehicle) = Vehicule::new(
+                            &sdl_context,
+                            &mut canvas,
+                            &texture_creator,
+                            random_direction,
+                            &vehicles,
+                        ) {
+                            if vehicle.can_add_vehicle(&mut last_key_press, Keycode::R, &vehicles) {
                                 vehicles.push(vehicle);
                             }
                         }
                     }
+
+                    is_creating_random_vehicles = false;
                 }
                 _ => {}
             }
