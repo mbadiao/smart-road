@@ -62,9 +62,7 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Up),
                     ..
                 } => {
-                    if is_creating_random_vehicles {
-                        continue;
-                    }
+                 
                     let mut vehicle = Vehicule::new(
                         &sdl_context,
                         &mut canvas,
@@ -80,9 +78,7 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Down),
                     ..
                 } => {
-                    if is_creating_random_vehicles {
-                        continue;
-                    }
+                   
                     let mut vehicle = Vehicule::new(
                         &sdl_context,
                         &mut canvas,
@@ -99,9 +95,7 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Left),
                     ..
                 } => {
-                    if is_creating_random_vehicles {
-                        continue;
-                    }
+                    
                     let mut vehicle = Vehicule::new(
                         &sdl_context,
                         &mut canvas,
@@ -118,9 +112,7 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Right),
                     ..
                 } => {
-                    if is_creating_random_vehicles {
-                        continue;
-                    }
+                   
                     let mut vehicle = Vehicule::new(
                         &sdl_context,
                         &mut canvas,
@@ -136,7 +128,7 @@ pub fn main() -> Result<(), String> {
                     keycode: Some(Keycode::R),
                     ..
                 } => {
-                    is_creating_random_vehicles = true;
+                    // is_creating_random_vehicles = true;
 
                     let num_vehicles = rand::thread_rng().gen_range(1..=3);
                     for _ in 0..num_vehicles {
@@ -155,7 +147,7 @@ pub fn main() -> Result<(), String> {
                         }
                     }
 
-                    is_creating_random_vehicles = false;
+                    // is_creating_random_vehicles = false;
                 }
                 _ => {}
             }
@@ -180,7 +172,7 @@ pub fn main() -> Result<(), String> {
             _ = statistics.display(&mut canvas);
         }
         canvas.present();
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        std::thread::sleep(std::time::Duration::from_millis(100/6));
     }
 
     Ok(())
