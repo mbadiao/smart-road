@@ -160,15 +160,18 @@ pub fn main() -> Result<(), String> {
                 _ => {}
             }
         }
+        vehicles.retain(|vehicle| !vehicle.is_out());
         let vehicle_positions: Vec<(i32, i32, Direction, Turn, bool)> = vehicles
             .iter()
             .map(|v| (v.x, v.y, v.direction, v.turn, v.passed))
             .collect();
-
-        for i in 0..vehicles.len() {
+       
+        for  i in 0..vehicles.len() {
             vehicles[i].update(&vehicle_positions, &mut statistics);
             vehicles[i].render(&mut canvas)?;
+           
         }
+
         statistics.max_velocity(&vehicles);
         statistics.min_velocity(&mut vehicles);
         statistics.increment(&vehicles);

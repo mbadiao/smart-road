@@ -101,6 +101,8 @@ impl<'a> Vehicule<'a> {
             }
             false
         }
+
+        
        
         let turn = match lane {
             1 => Turn::Right,
@@ -128,6 +130,9 @@ impl<'a> Vehicule<'a> {
         })
     }
 
+    pub fn is_out(&self) -> bool {
+        self.x < 0 || self.x > 700 || self.y < 0 || self.y > 700
+    }
     pub fn can_add_vehicle(
         &mut self,
         last_key_press: &mut HashMap<Keycode, Instant>,
@@ -499,7 +504,7 @@ impl<'a> Vehicule<'a> {
                             self.time = 35;
                         }
                         match self.x {
-                            340..=350  => {
+                            340..=370  => {
                                 if is_left {
                                     self.execute_turn();
                                 }
