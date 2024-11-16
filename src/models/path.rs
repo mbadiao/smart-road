@@ -3,7 +3,7 @@ use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 use sdl2::video::Window;
 use super::vehicules::Vehicule;
-
+use sdl2::image::{InitFlag, LoadTexture};
 
 pub struct  Path<'a> {
    pub vehicules : Vec< Vehicule<'a>>,
@@ -35,10 +35,10 @@ impl<'a>  Path<'a> {
     
         // Bordures principales du quadrillage
         let _ = canvas.fill_rect(Rect::new(230, 0, 1, 700));  // Gauche
-        let _ = canvas.fill_rect(Rect::new(350, 0, 1, 700));  // Centre
+        // let _ = canvas.fill_rect(Rect::new(350, 0, 1, 700));  // Centre
         let _ = canvas.fill_rect(Rect::new(470, 0, 1, 700));  // Droite
         let _ = canvas.fill_rect(Rect::new(0, 230, 700, 1));  // Haut
-        let _ = canvas.fill_rect(Rect::new(0, 350, 700, 1));  // Centre
+        // let _ = canvas.fill_rect(Rect::new(0, 350, 700, 1));  // Centre
         let _ = canvas.fill_rect(Rect::new(0, 470, 700, 1));  // Bas
     
         // Rectangles noirs pour les zones bloquées au centre
@@ -46,7 +46,19 @@ impl<'a>  Path<'a> {
         
         
         let _ = canvas.fill_rect(Rect::new(230, 230, 470 - 229, 470 - 229));
+       
+        let texture_creator = canvas.texture_creator();
+        let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG); 
         
+        // Charger la texture et gérer l'erreur
+        let texture = texture_creator.load_texture("./assets/intersection.png")
+            .expect("Impossible de charger la texture");
+
+        // Dessiner la texture
+        canvas.copy(&texture, None, None)
+            .expect("Impossible de dessiner la texture");
+
+        // Mettre à jour l'affichage
         Path {
             vehicules: Vec::new(),
         }
